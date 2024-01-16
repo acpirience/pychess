@@ -9,6 +9,13 @@ class Game:
     def __init__(self) -> None:
         self.running = True
         self.exit_requested = False
+
+        # screen
+        self.game_w = 800
+        self.game_h = 800
+        self.screen_width = 800
+        self.screen_height = 800
+
         self.init_window()
         self.init_screen()
 
@@ -25,16 +32,10 @@ class Game:
 
     def init_screen(self) -> None:
         # Screen and aspect ratio
-        self.game_w = 800
-        self.game_h = 800
-        self.ratio = self.game_w / self.game_h
-
-        self.screen_width = 800
-        self.screen_height = 800
-
-        self.blit_origin = (0, 0)
+        self.game_ratio = self.game_w / self.game_h
         self.blit_w = self.screen_width
         self.blit_h = self.screen_height
+        self.blit_origin = (0, 0)
 
         self.monitor_size = [
             pygame.display.Info().current_w,
