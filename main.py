@@ -3,6 +3,7 @@
 """
 import sys
 import pygame
+from board import Board
 
 
 class Game:
@@ -15,10 +16,10 @@ class Game:
         self.game_h = 960
         self.screen_width = 1280
         self.screen_height = 960
-        self.square_size = 800 / 8
 
         self.init_window()
         self.init_screen()
+        self.board = Board("STANDARD", "WOOD")
 
     def game_loop(self) -> None:
         while self.running:
@@ -57,15 +58,7 @@ class Game:
     def render(self) -> None:
         self.game_canvas.fill(pygame.Color("Dark Green"))
 
-        colors = [pygame.Color("White"), pygame.Color("Black")]
-        for x in range(8):
-            for y in range(8):
-                square = pygame.Rect(
-                    ((x % 8) * self.square_size, (y % 8) * self.square_size),
-                    (self.square_size, self.square_size),
-                )
-
-                pygame.draw.rect(self.game_canvas, colors[(x + y) % 2], square)
+        self.board.render(self.game_canvas)
 
         self.screen.blit(
             pygame.transform.scale(self.game_canvas, (self.blit_w, self.blit_h)),
