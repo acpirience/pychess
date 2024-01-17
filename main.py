@@ -19,7 +19,7 @@ class Game:
 
         self.init_window()
         self.init_screen()
-        self.board = Board("STANDARD", "WOOD")
+        self.board = Board(True, "WOOD")
 
     def game_loop(self) -> None:
         while self.running:
