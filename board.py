@@ -28,7 +28,7 @@ class Board:
     ) -> None:
         self.white_is_south = white_is_south
         self.color_scheme = color_scheme
-        self.board_content: list[str] = ["" for _ in range(8)]
+        self.board_content: list[list[str]] = [[] for _ in range(8)]
         self._load_assets()
         self.load_board_from_FEN(FEN_INITIAL_BOARD)
 
@@ -129,18 +129,15 @@ class Board:
         if self.white_is_south:
             board = self.board_content
         else:
-            board = [
-                Board.reverse_piece_line(self.board_content[x])
-                for x in reversed(range(8))
-            ]
+            board = [self.board_content[x][::-1] for x in reversed(range(8))]
 
         cur_line = 0
         for line in board:
             cur_col = 0
             while cur_col < 8:
-                if not line[0 + cur_col * 2 : 2 + cur_col * 2] == "  ":
+                if line[cur_col]:
                     game_canvas.blit(
-                        self.piece_list[line[0 + cur_col * 2 : 2 + cur_col * 2]],
+                        self.piece_list[line[cur_col]],
                         (
                             BORDER_SIZE + (SQUARE_SIZE * cur_col),
                             BORDER_SIZE + (SQUARE_SIZE * cur_line),
@@ -152,15 +149,15 @@ class Board:
     def load_board_from_FEN(self, fen_string: str) -> None:
         # https://www.chess.com/terms/fen-chess
         cur_board_line = 0
-        self.board_content = ["" for _ in range(8)]
+        self.board_content = [[] for _ in range(8)]
         for line in fen_string.split("/"):
             for x in line:
                 if x.isdigit():
                     for i in range(int(x)):
-                        self.board_content[cur_board_line] += "  "
+                        self.board_content[cur_board_line].append("")
                 else:
-                    self.board_content[cur_board_line] += x.upper() + (
-                        "b" if x.islower() else "w"
+                    self.board_content[cur_board_line].append(
+                        x.upper() + ("b" if x.islower() else "w")
                     )
             cur_board_line += 1
 
@@ -171,10 +168,3 @@ class Board:
         text = font.render(msg, True, color)
         text_rect = text.get_rect(center=(pos_x, pos_y))
         return text, text_rect
-
-    @staticmethod
-    def reverse_piece_line(line: str) -> str:
-        ret = ""
-        for i in reversed(range(8)):
-            ret += line[i * 2 : (i * 2) + 2]
-        return ret
