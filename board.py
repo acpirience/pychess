@@ -6,6 +6,8 @@ class responsible to draw the chess board in its current state
 
 import pygame
 import os
+from loguru import logger
+import glob
 
 COLOR_SCHEME_LIST = {
     "BLACK": ["#D6D7D4", "#211E24", "#000000"],
@@ -15,6 +17,7 @@ COLOR_SCHEME_LIST = {
 
 SQUARE_SIZE = 100
 BORDER_SIZE = 25
+FEN_INITIAL_BOARD = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 
 
 class Board:
@@ -25,23 +28,41 @@ class Board:
     ) -> None:
         self.white_is_south = white_is_south
         self.color_scheme = color_scheme
+        self.board_content: list[str] = ["" for _ in range(8)]
         self._load_assets()
+        self.load_board_from_FEN(FEN_INITIAL_BOARD)
 
     def _load_assets(self) -> None:
         self.assets_dir = os.path.join("assets")
         self.font_dir = os.path.join(self.assets_dir, "fonts")
+        self.imgs_dir = os.path.join(self.assets_dir, "imgs")
 
         # fonts
         # https://www.dafont.com/fr/coolvetica.font
         self.font_board_marks = pygame.font.Font(
             os.path.join(self.font_dir, "coolvetica rg.otf"), 16
         )
+        logger.info("Loading font_board_marks: 'coolvetica rg.otf' 16")
+
+        # Images : chess pieces
+        # https://commons.wikimedia.org/wiki/Category:SVG_chess_pieces
+        self.piece_list = {}
+        png_list = [
+            x.removeprefix(self.imgs_dir + os.sep).removesuffix(".png")
+            for x in glob.glob(os.path.join(self.imgs_dir, "*.png"))
+        ]
+        for piece in png_list:
+            self.piece_list[piece] = pygame.image.load(
+                os.path.join(self.imgs_dir, f"{piece}.png")
+            )
+            logger.info(f"Loading image {piece}: {piece}.png")
 
     def render(self, game_canvas: pygame.Surface) -> None:
         self.square_colors = COLOR_SCHEME_LIST[self.color_scheme]
         self._render_back(game_canvas)
         self._render_board(game_canvas)
         self._render_marks(game_canvas)
+        self._render_pieces(game_canvas)
 
     def _render_board(self, game_canvas: pygame.Surface) -> None:
         for x in range(8):
@@ -104,6 +125,45 @@ class Board:
             )
             game_canvas.blit(pygame.transform.rotate(text, 180), text_rect)
 
+    def _render_pieces(self, game_canvas: pygame.Surface) -> None:
+        if self.white_is_south:
+            board = self.board_content
+        else:
+            board = [
+                Board.reverse_piece_line(self.board_content[x])
+                for x in reversed(range(8))
+            ]
+
+        cur_line = 0
+        for line in board:
+            cur_col = 0
+            while cur_col < 8:
+                if not line[0 + cur_col * 2 : 2 + cur_col * 2] == "  ":
+                    game_canvas.blit(
+                        self.piece_list[line[0 + cur_col * 2 : 2 + cur_col * 2]],
+                        (
+                            BORDER_SIZE + (SQUARE_SIZE * cur_col),
+                            BORDER_SIZE + (SQUARE_SIZE * cur_line),
+                        ),
+                    )
+                cur_col += 1
+            cur_line += 1
+
+    def load_board_from_FEN(self, fen_string: str) -> None:
+        # https://www.chess.com/terms/fen-chess
+        cur_board_line = 0
+        self.board_content = ["" for _ in range(8)]
+        for line in fen_string.split("/"):
+            for x in line:
+                if x.isdigit():
+                    for i in range(int(x)):
+                        self.board_content[cur_board_line] += "  "
+                else:
+                    self.board_content[cur_board_line] += x.upper() + (
+                        "b" if x.islower() else "w"
+                    )
+            cur_board_line += 1
+
     @staticmethod
     def center_text(
         msg: str, pos_x: float, pos_y: float, color: pygame.Color, font: pygame.font
@@ -111,3 +171,10 @@ class Board:
         text = font.render(msg, True, color)
         text_rect = text.get_rect(center=(pos_x, pos_y))
         return text, text_rect
+
+    @staticmethod
+    def reverse_piece_line(line: str) -> str:
+        ret = ""
+        for i in reversed(range(8)):
+            ret += line[i * 2 : (i * 2) + 2]
+        return ret
