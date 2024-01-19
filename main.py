@@ -6,7 +6,7 @@ import pygame
 from board import Board
 
 
-class Game:
+class Chess:
     def __init__(self) -> None:
         self.running = True
         self.exit_requested = False
@@ -69,7 +69,7 @@ class Game:
 
 
 if __name__ == "__main__":
-    g = Game()
+    g = Chess()
     while not g.exit_requested:
         g.game_loop()
 
