@@ -3,7 +3,7 @@
 """
 import sys
 import pygame
-from board import Board
+from game import Game
 
 
 class Chess:
@@ -19,7 +19,7 @@ class Chess:
 
         self.init_window()
         self.init_screen()
-        self.board = Board(True, "WOOD")
+        self.game = Game()
 
     def game_loop(self) -> None:
         while self.running:
@@ -58,7 +58,7 @@ class Chess:
     def render(self) -> None:
         self.game_canvas.fill(pygame.Color("Dark Green"))
 
-        self.board.render(self.game_canvas)
+        self.game.render(self.game_canvas)
 
         self.screen.blit(
             pygame.transform.scale(self.game_canvas, (self.blit_w, self.blit_h)),

@@ -8,6 +8,8 @@ import pygame
 import os
 from loguru import logger
 import glob
+from config import IMG_DIR, FONT_DIR
+
 
 COLOR_SCHEME_LIST = {
     "BLACK": ["#D6D7D4", "#211E24", "#000000"],
@@ -17,7 +19,6 @@ COLOR_SCHEME_LIST = {
 
 SQUARE_SIZE = 100
 BORDER_SIZE = 25
-FEN_INITIAL_BOARD = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 
 
 class Board:
@@ -30,17 +31,12 @@ class Board:
         self.color_scheme = color_scheme
         self.board_content: list[list[str]] = [[] for _ in range(8)]
         self._load_assets()
-        self.load_board_from_FEN(FEN_INITIAL_BOARD)
 
     def _load_assets(self) -> None:
-        self.assets_dir = os.path.join("assets")
-        self.font_dir = os.path.join(self.assets_dir, "fonts")
-        self.imgs_dir = os.path.join(self.assets_dir, "imgs")
-
         # fonts
         # https://www.dafont.com/fr/coolvetica.font
         self.font_board_marks = pygame.font.Font(
-            os.path.join(self.font_dir, "coolvetica rg.otf"), 16
+            os.path.join(FONT_DIR, "coolvetica rg.otf"), 16
         )
         logger.info("Loading font_board_marks: 'coolvetica rg.otf' 16")
 
@@ -48,12 +44,12 @@ class Board:
         # https://commons.wikimedia.org/wiki/Category:SVG_chess_pieces
         self.piece_list = {}
         png_list = [
-            x.removeprefix(self.imgs_dir + os.sep).removesuffix(".png")
-            for x in glob.glob(os.path.join(self.imgs_dir, "*.png"))
+            x.removeprefix(IMG_DIR + os.sep).removesuffix(".png")
+            for x in glob.glob(os.path.join(IMG_DIR, "*.png"))
         ]
         for piece in png_list:
             self.piece_list[piece] = pygame.image.load(
-                os.path.join(self.imgs_dir, f"{piece}.png")
+                os.path.join(IMG_DIR, f"{piece}.png")
             )
             logger.info(f"Loading image {piece}: {piece}.png")
 
