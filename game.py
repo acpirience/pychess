@@ -4,12 +4,13 @@ Chess game
 
 """
 
-from board import Board, BORDER_SIZE, SQUARE_SIZE
-import pygame
 import os
-from loguru import logger
-from config import FONT_DIR
 
+import pygame
+from loguru import logger
+
+from board import BORDER_SIZE, SQUARE_SIZE, Board
+from config import FONT_DIR
 
 FEN_INITIAL_BOARD = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 BOARD_SIZE = (SQUARE_SIZE * 8) + (BORDER_SIZE * 2)
@@ -32,9 +33,7 @@ class Game:
     def _load_assets(self) -> None:
         # fonts
         # https://www.dafont.com/fr/coolvetica.font
-        self.font_turn = pygame.font.Font(
-            os.path.join(FONT_DIR, "coolvetica rg.otf"), 24
-        )
+        self.font_turn = pygame.font.Font(os.path.join(FONT_DIR, "coolvetica rg.otf"), 24)
         logger.info("Loading font_turn: 'coolvetica rg.otf' 24")
 
     def update(self) -> None:

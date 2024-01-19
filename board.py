@@ -4,12 +4,13 @@ class responsible to draw the chess board in its current state
 
 """
 
-import pygame
-import os
-from loguru import logger
 import glob
-from config import IMG_DIR, FONT_DIR
+import os
 
+import pygame
+from loguru import logger
+
+from config import FONT_DIR, IMG_DIR
 
 COLOR_SCHEME_LIST = {
     "BLACK": ["#D6D7D4", "#211E24", "#000000"],
@@ -35,9 +36,7 @@ class Board:
     def _load_assets(self) -> None:
         # fonts
         # https://www.dafont.com/fr/coolvetica.font
-        self.font_board_marks = pygame.font.Font(
-            os.path.join(FONT_DIR, "coolvetica rg.otf"), 16
-        )
+        self.font_board_marks = pygame.font.Font(os.path.join(FONT_DIR, "coolvetica rg.otf"), 16)
         logger.info("Loading font_board_marks: 'coolvetica rg.otf' 16")
 
         # Images : chess pieces
@@ -48,9 +47,7 @@ class Board:
             for x in glob.glob(os.path.join(IMG_DIR, "*.png"))
         ]
         for piece in png_list:
-            self.piece_list[piece] = pygame.image.load(
-                os.path.join(IMG_DIR, f"{piece}.png")
-            )
+            self.piece_list[piece] = pygame.image.load(os.path.join(IMG_DIR, f"{piece}.png"))
             logger.info(f"Loading image {piece}: {piece}.png")
 
     def render(self, game_canvas: pygame.Surface) -> None:
@@ -149,7 +146,7 @@ class Board:
         for line in fen_string.split("/"):
             for x in line:
                 if x.isdigit():
-                    for i in range(int(x)):
+                    for _ in range(int(x)):
                         self.board_content[cur_board_line].append("")
                 else:
                     self.board_content[cur_board_line].append(
