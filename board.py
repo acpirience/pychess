@@ -34,6 +34,8 @@ class Board:
         self._load_assets()
 
     def _load_assets(self) -> None:
+        # load assets used by the object
+
         # fonts
         # https://www.dafont.com/fr/coolvetica.font
         self.font_board_marks = pygame.font.Font(os.path.join(FONT_DIR, "coolvetica rg.otf"), 16)
@@ -50,7 +52,11 @@ class Board:
             self.piece_list[piece] = pygame.image.load(os.path.join(IMG_DIR, f"{piece}.png"))
             logger.info(f"Loading image {piece}: {piece}.png")
 
+    def update(self) -> None:
+        pass
+
     def render(self, game_canvas: pygame.Surface) -> None:
+        # render board on screen
         self.square_colors = COLOR_SCHEME_LIST[self.color_scheme]
         self._render_back(game_canvas)
         self._render_board(game_canvas)
@@ -71,11 +77,13 @@ class Board:
                 pygame.draw.rect(game_canvas, self.square_colors[(x + y) % 2], square)
 
     def _render_back(self, game_canvas: pygame.Surface) -> None:
+        # render back of board
         back_length = (BORDER_SIZE * 2) + (SQUARE_SIZE * 8)
         back = pygame.Rect((0, 0), (back_length, back_length))
         pygame.draw.rect(game_canvas, self.square_colors[2], back)
 
     def _render_marks(self, game_canvas: pygame.Surface) -> None:
+        # render board marks (coordinates of squares) on screen
         numbers = [str(x + 1) for x in reversed(range(8))]
         letters = [chr(x + 65) for x in range(8)]
         if not self.white_is_south:
@@ -119,6 +127,7 @@ class Board:
             game_canvas.blit(pygame.transform.rotate(text, 180), text_rect)
 
     def _render_pieces(self, game_canvas: pygame.Surface) -> None:
+        # render chezz pieces on screen
         if self.white_is_south:
             board = self.board_content
         else:
@@ -140,6 +149,7 @@ class Board:
             cur_line += 1
 
     def load_board_from_FEN(self, fen_string: str) -> None:
+        # load board content from a FEN string
         # https://www.chess.com/terms/fen-chess
         cur_board_line = 0
         self.board_content = [[] for _ in range(8)]
@@ -156,7 +166,12 @@ class Board:
 
     @staticmethod
     def center_text(
-        msg: str, pos_x: float, pos_y: float, color: pygame.Color, font: pygame.font
+        # helper function to center text on screen
+        msg: str,
+        pos_x: float,
+        pos_y: float,
+        color: pygame.Color,
+        font: pygame.font,
     ) -> tuple[pygame.Surface, pygame.Rect]:
         text = font.render(msg, True, color)
         text_rect = text.get_rect(center=(pos_x, pos_y))

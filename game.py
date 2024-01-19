@@ -31,6 +31,8 @@ class Game:
         self._load_assets()
 
     def _load_assets(self) -> None:
+        # load assets used by the object
+
         # fonts
         # https://www.dafont.com/fr/coolvetica.font
         self.font_turn = pygame.font.Font(os.path.join(FONT_DIR, "coolvetica rg.otf"), 24)
@@ -40,10 +42,12 @@ class Game:
         pass
 
     def render(self, game_canvas: pygame.Surface) -> None:
+        # render Board and game informations on screen
         self.board.render(game_canvas)
         self._render_turn(game_canvas)
 
     def _render_turn(self, game_canvas: pygame.Surface) -> None:
+        # render turn number and who's turn is it on screen
         game_canvas.blit(
             self.font_turn.render(
                 f"TURN {self.turn}, {'White' if self.white_plays else 'Black'} plays",
