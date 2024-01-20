@@ -11,6 +11,7 @@ import pygame
 from loguru import logger
 
 from config import FONT_DIR, IMG_DIR
+from piece import Piece
 
 COLOR_SCHEME_LIST = {
     "BLACK": ["#D6D7D4", "#211E24", "#000000"],
@@ -30,7 +31,7 @@ class Board:
     ) -> None:
         self.white_is_south = white_is_south
         self.color_scheme = color_scheme
-        self.board_content: list[list[str]] = [[] for _ in range(8)]
+        self.board_content: list[list[Piece]] = [[] for _ in range(8)]
         self._load_assets()
 
     def _load_assets(self) -> None:
@@ -127,7 +128,7 @@ class Board:
             game_canvas.blit(pygame.transform.rotate(text, 180), text_rect)
 
     def _render_pieces(self, game_canvas: pygame.Surface) -> None:
-        # render chezz pieces on screen
+        # render chess pieces on screen
         if self.white_is_south:
             board = self.board_content
         else:
@@ -139,7 +140,7 @@ class Board:
             while cur_col < 8:
                 if line[cur_col]:
                     game_canvas.blit(
-                        self.piece_list[line[cur_col]],
+                        self.piece_list[f"{line[cur_col]}"],
                         (
                             BORDER_SIZE + (SQUARE_SIZE * cur_col),
                             BORDER_SIZE + (SQUARE_SIZE * cur_line),
@@ -157,10 +158,10 @@ class Board:
             for x in line:
                 if x.isdigit():
                     for _ in range(int(x)):
-                        self.board_content[cur_board_line].append("")
+                        self.board_content[cur_board_line].append(Piece())
                 else:
                     self.board_content[cur_board_line].append(
-                        x.upper() + ("b" if x.islower() else "w")
+                        Piece(x.upper(), "b" if x.islower() else "w")
                     )
             cur_board_line += 1
 
