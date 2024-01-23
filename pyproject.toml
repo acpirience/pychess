@@ -91,6 +91,7 @@ docstring-code-line-length = "dynamic"
 python = "^3.11"
 pygame = "^2.5.2"
 loguru = "^0.7.2"
+pytest-cov = "^4.1.0"
 
 [build-system]
 requires = ["poetry-core"]
