@@ -25,10 +25,12 @@ class Position:
             for col in range(8):
                 if self.board[line][col].color == "w":
                     pieces.append((self.board[line][col], line, col))
-                    logger.info(f"{self.board[line][col]}, {line} {col}")
 
+        moves = []
         for piece, line, col in pieces:
-            moves = self.get_moves_for_piece(piece, line, col)
+            moves += self.get_moves_for_piece(piece, line, col)
+
+        logger.info(moves)
         return moves
 
     def get_moves_for_piece(self, piece: Piece, line: int, col: int) -> list[str]:
@@ -53,8 +55,6 @@ class Position:
                         )
             # en passant TBD
 
-        if moves:
-            logger.info(moves)
         return moves
 
     def _line_to_board(self, line: int) -> int:
@@ -74,10 +74,6 @@ class Position:
             new_board.append(new_line)
 
         self.board = new_board
-        for x in range(8):
-            logger.info(
-                f"{self.board[x][0]} {self.board[x][1]} {self.board[x][2]} {self.board[x][3]} {self.board[x][4]} {self.board[x][5]} {self.board[x][6]} {self.board[x][7]}"
-            )
 
     @staticmethod
     def _invert_color(color: str) -> str:

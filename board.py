@@ -32,7 +32,7 @@ class Board:
         self.white_is_south = white_is_south
         self.color_scheme = color_scheme
         self.board_content: list[list[Piece]] = [[] for _ in range(8)]
-        self._load_assets()
+        self.asset_loaded = False
 
     def _load_assets(self) -> None:
         # load assets used by the object
@@ -58,6 +58,11 @@ class Board:
 
     def render(self, game_canvas: pygame.Surface) -> None:
         # render board on screen
+
+        # if assets not loaded, load them (to avoid an error in pytest)
+        if not self.asset_loaded:
+            self._load_assets()
+            self.asset_loaded = True
         self.square_colors = COLOR_SCHEME_LIST[self.color_scheme]
         self._render_back(game_canvas)
         self._render_board(game_canvas)
