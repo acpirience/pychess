@@ -14,7 +14,7 @@ from config import FONT_DIR
 from position import Position
 
 FEN_INITIAL_BOARD = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
-# FEN_INITIAL_BOARD = "8/1p4p1/PPP4p/8/8/8/8/8"
+# FEN_INITIAL_BOARD = "8/8/8/8/4PpP1/8/8/8"
 BOARD_SIZE = (SQUARE_SIZE * 8) + (BORDER_SIZE * 2)
 
 
@@ -24,7 +24,7 @@ class Game:
         self.FEN_list: list[str] = []
         # dict containing information on the game such as
         # who is to play / is a king in check / have king moved (for castle)
-        self.flags: dict[str, str] = {"color": "w", "in_check": ""}
+        self.flags: dict[str, str] = {"color": "w", "in_check": "", "previous_move": ""}
         self.turn = 1
 
         # Board

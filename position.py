@@ -53,7 +53,18 @@ class Position:
                         moves.append(
                             f"{Position._col_to_letter(col)}x{Position._col_to_letter(col + i)}{self._line_to_board(line - 1)}"
                         )
-            # en passant TBD
+            # en passant
+            if line == 3:  # only line where pawn can capture "en passant"
+                for i in [-1, 1]:
+                    if 0 <= col + i <= 7:
+                        # previous move was a pawn moving 2 squares on left or right of pawn
+                        if (
+                            self.flags["previous_move"]
+                            == f"{Position._col_to_letter(col + i)}{self._line_to_board(line)}"
+                        ):
+                            moves.append(
+                                f"{Position._col_to_letter(col)}x{Position._col_to_letter(col + i)}{self._line_to_board(line - 1)}"
+                            )
 
         return moves
 
