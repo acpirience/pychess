@@ -36,35 +36,41 @@ class Position:
     def get_moves_for_piece(self, piece: Piece, line: int, col: int) -> list[str]:
         moves: list[str] = []
 
-        # Pawn
-        if piece.piece == "P":
-            # move
-            if not self.board[line - 1][col]:  # Pawn move 1 square
-                moves.append(f"{Position._col_to_letter(col)}{self._line_to_board(line -1)}")
-                if line == 6:  # if first move can move 2 squares
-                    if not self.board[line - 2][col]:
-                        moves.append(
-                            f"{Position._col_to_letter(col)}{self._line_to_board(line - 2)}"
-                        )
-            # capture
+        match piece.piece:
+            case "P":  # Pawn
+                moves += self._get_moves_for_pawn(piece, line, col)
+            case _:
+                logger.error("Not implemented yet")
+
+        return moves
+
+    def _get_moves_for_pawn(self, piece: Piece, line: int, col: int) -> list[str]:
+        moves: list[str] = []
+        # move
+        if not self.board[line - 1][col]:  # Pawn move 1 square
+            moves.append(f"{Position._col_to_letter(col)}{self._line_to_board(line - 1)}")
+            if line == 6:  # if first move can move 2 squares
+                if not self.board[line - 2][col]:
+                    moves.append(f"{Position._col_to_letter(col)}{self._line_to_board(line - 2)}")
+        # capture
+        for i in [-1, 1]:
+            if 0 <= col + i <= 7:
+                if self.board[line - 1][col + i] and self.board[line - 1][col + i].color == "b":
+                    moves.append(
+                        f"{Position._col_to_letter(col)}x{Position._col_to_letter(col + i)}{self._line_to_board(line - 1)}"
+                    )
+        # en passant
+        if line == 3:  # only line where pawn can capture "en passant"
             for i in [-1, 1]:
                 if 0 <= col + i <= 7:
-                    if self.board[line - 1][col + i] and self.board[line - 1][col + i].color == "b":
+                    # previous move was a pawn moving 2 squares on left or right of pawn
+                    if (
+                        self.flags["previous_move"]
+                        == f"{Position._col_to_letter(col + i)}{self._line_to_board(line)}"
+                    ):
                         moves.append(
                             f"{Position._col_to_letter(col)}x{Position._col_to_letter(col + i)}{self._line_to_board(line - 1)}"
                         )
-            # en passant
-            if line == 3:  # only line where pawn can capture "en passant"
-                for i in [-1, 1]:
-                    if 0 <= col + i <= 7:
-                        # previous move was a pawn moving 2 squares on left or right of pawn
-                        if (
-                            self.flags["previous_move"]
-                            == f"{Position._col_to_letter(col + i)}{self._line_to_board(line)}"
-                        ):
-                            moves.append(
-                                f"{Position._col_to_letter(col)}x{Position._col_to_letter(col + i)}{self._line_to_board(line - 1)}"
-                            )
 
         return moves
 
