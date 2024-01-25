@@ -29,22 +29,22 @@ def test_move_pawns_alone(test_board: Board, test_flags: dict[str, str]) -> None
 
     possible_moves.sort()
     assert possible_moves == [
-        "a3",
-        "a4",
-        "b3",
-        "b4",
-        "c3",
-        "c4",
-        "d3",
-        "d4",
-        "e3",
-        "e4",
-        "f3",
-        "f4",
-        "g3",
-        "g4",
-        "h3",
-        "h4",
+        "a2a3",
+        "a2a4",
+        "b2b3",
+        "b2b4",
+        "c2c3",
+        "c2c4",
+        "d2d3",
+        "d2d4",
+        "e2e3",
+        "e2e4",
+        "f2f3",
+        "f2f4",
+        "g2g3",
+        "g2g4",
+        "h2h3",
+        "h2h4",
     ]
 
 
@@ -65,7 +65,7 @@ def test_move_pawns_mixed(test_board: Board, test_flags: dict[str, str]) -> None
     possible_moves = test_position.get_possible_moves()
 
     possible_moves.sort()
-    assert possible_moves == ["c3", "e3", "e4", "g4"]
+    assert possible_moves == ["c2c3", "e2e3", "e2e4", "g3g4"]
 
 
 def test_move_pawns_take(test_board: Board, test_flags: dict[str, str]) -> None:
@@ -75,7 +75,7 @@ def test_move_pawns_take(test_board: Board, test_flags: dict[str, str]) -> None:
     possible_moves = test_position.get_possible_moves()
 
     possible_moves.sort()
-    assert possible_moves == ["exd3", "exf3"]
+    assert possible_moves == ["e2xd3", "e2xf3"]
 
 
 def test_black_pawns_move_and_take(test_board: Board, test_flags: dict[str, str]) -> None:
@@ -86,7 +86,7 @@ def test_black_pawns_move_and_take(test_board: Board, test_flags: dict[str, str]
     possible_moves = test_position.get_possible_moves()
 
     possible_moves.sort()
-    assert possible_moves == ["bxa6", "bxc6", "g5", "g6", "h5"]
+    assert possible_moves == ["b7xa6", "b7xc6", "g7g5", "g7g6", "h6h5"]
 
 
 def test_pawns_capture_en_passant(test_board: Board, test_flags: dict[str, str]) -> None:
@@ -97,7 +97,7 @@ def test_pawns_capture_en_passant(test_board: Board, test_flags: dict[str, str])
     possible_moves = test_position.get_possible_moves()
 
     possible_moves.sort()
-    assert possible_moves == ["b6", "bxa6"]
+    assert possible_moves == ["b5b6", "b5xa6"]
 
 
 def test_black_pawns_capture_en_passant(test_board: Board, test_flags: dict[str, str]) -> None:
@@ -109,4 +109,4 @@ def test_black_pawns_capture_en_passant(test_board: Board, test_flags: dict[str,
     possible_moves = test_position.get_possible_moves()
 
     possible_moves.sort()
-    assert possible_moves == ["f3", "fxe3"]
+    assert possible_moves == ["f4f3", "f4xe3"]

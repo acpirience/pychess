@@ -28,7 +28,16 @@ def test_knight_move(test_board: Board, test_flags: dict[str, str]) -> None:
     possible_moves = test_position.get_possible_moves()
 
     possible_moves.sort()
-    assert possible_moves == ["Nb3", "Nb5", "Nc2", "Nc6", "Ne2", "Ne6", "Nf3", "Nf5"]
+    assert possible_moves == [
+        "Nd4b3",
+        "Nd4b5",
+        "Nd4c2",
+        "Nd4c6",
+        "Nd4e2",
+        "Nd4e6",
+        "Nd4f3",
+        "Nd4f5",
+    ]
 
 
 def test_black_knight_move(test_board: Board, test_flags: dict[str, str]) -> None:
@@ -39,7 +48,16 @@ def test_black_knight_move(test_board: Board, test_flags: dict[str, str]) -> Non
     possible_moves = test_position.get_possible_moves()
 
     possible_moves.sort()
-    assert possible_moves == ["Nb3", "Nb5", "Nc2", "Nc6", "Ne2", "Ne6", "Nf3", "Nf5"]
+    assert possible_moves == [
+        "Nd4b3",
+        "Nd4b5",
+        "Nd4c2",
+        "Nd4c6",
+        "Nd4e2",
+        "Nd4e6",
+        "Nd4f3",
+        "Nd4f5",
+    ]
 
 
 def test_knight_capture(test_board: Board, test_flags: dict[str, str]) -> None:
@@ -49,7 +67,7 @@ def test_knight_capture(test_board: Board, test_flags: dict[str, str]) -> None:
     possible_moves = test_position.get_possible_moves()
 
     possible_moves.sort()
-    assert possible_moves == ["Nxb3", "Nxc2"]
+    assert possible_moves == ["Na1xb3", "Na1xc2"]
 
 
 def test_knight_blocked(test_board: Board, test_flags: dict[str, str]) -> None:

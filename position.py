@@ -52,16 +52,20 @@ class Position:
         moves: list[str] = []
         # move
         if not self.board[line - 1][col]:  # Pawn move 1 square
-            moves.append(f"{Position._col_to_letter(col)}{self._line_to_board(line - 1)}")
+            moves.append(
+                f"{Position._col_to_letter(col)}{self._line_to_board(line)}{Position._col_to_letter(col)}{self._line_to_board(line - 1)}"
+            )
             if line == 6:  # if first move can move 2 squares
                 if not self.board[line - 2][col]:
-                    moves.append(f"{Position._col_to_letter(col)}{self._line_to_board(line - 2)}")
+                    moves.append(
+                        f"{Position._col_to_letter(col)}{self._line_to_board(line)}{Position._col_to_letter(col)}{self._line_to_board(line - 2)}"
+                    )
         # capture
         for i in [-1, 1]:
             if 0 <= col + i <= 7:
                 if self.board[line - 1][col + i] and self.board[line - 1][col + i].color == "b":
                     moves.append(
-                        f"{Position._col_to_letter(col)}x{Position._col_to_letter(col + i)}{self._line_to_board(line - 1)}"
+                        f"{Position._col_to_letter(col)}{self._line_to_board(line)}x{Position._col_to_letter(col + i)}{self._line_to_board(line - 1)}"
                     )
         # en passant
         if line == 3:  # only line where pawn can capture "en passant"
@@ -73,7 +77,7 @@ class Position:
                         == f"{Position._col_to_letter(col + i)}{self._line_to_board(line)}"
                     ):
                         moves.append(
-                            f"{Position._col_to_letter(col)}x{Position._col_to_letter(col + i)}{self._line_to_board(line - 1)}"
+                            f"{Position._col_to_letter(col)}{self._line_to_board(line)}x{Position._col_to_letter(col + i)}{self._line_to_board(line - 1)}"
                         )
 
         return moves
@@ -88,13 +92,13 @@ class Position:
                 if not self.board[cur_line + move_type[0]][cur_col + move_type[1]]:
                     # empty square
                     moves.append(
-                        f"R{Position._col_to_letter(cur_col + move_type[1])}{self._line_to_board(cur_line + move_type[0])}"
+                        f"R{Position._col_to_letter(col)}{self._line_to_board(line)}{Position._col_to_letter(cur_col + move_type[1])}{self._line_to_board(cur_line + move_type[0])}"
                     )
                 else:
                     if self.board[cur_line + move_type[0]][cur_col + move_type[1]].color == "b":
                         # square contains black piece => capture
                         moves.append(
-                            f"Rx{Position._col_to_letter(cur_col + move_type[1])}{self._line_to_board(cur_line + move_type[0])}"
+                            f"R{Position._col_to_letter(col)}{self._line_to_board(line)}x{Position._col_to_letter(cur_col + move_type[1])}{self._line_to_board(cur_line + move_type[0])}"
                         )
                     # square not empty, next type of move
                     break
@@ -110,11 +114,11 @@ class Position:
             if (0 <= line + move_type[0] <= 7) and (0 <= col + move_type[1] <= 7):
                 if not self.board[line + move_type[0]][col + move_type[1]]:
                     moves.append(
-                        f"N{Position._col_to_letter(col + move_type[1])}{self._line_to_board(line + move_type[0])}"
+                        f"N{Position._col_to_letter(col)}{self._line_to_board(line)}{Position._col_to_letter(col + move_type[1])}{self._line_to_board(line + move_type[0])}"
                     )
                 elif self.board[line + move_type[0]][col + move_type[1]].color == "b":
                     moves.append(
-                        f"Nx{Position._col_to_letter(col + move_type[1])}{self._line_to_board(line + move_type[0])}"
+                        f"N{Position._col_to_letter(col)}{self._line_to_board(line)}x{Position._col_to_letter(col + move_type[1])}{self._line_to_board(line + move_type[0])}"
                     )
 
         return moves
