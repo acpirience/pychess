@@ -41,6 +41,8 @@ class Position:
                 moves += self._get_moves_for_pawn(line, col)
             case "R":  # Rook
                 moves += self._get_moves_for_rook(line, col)
+            case "N":  # Knight
+                moves += self._get_moves_for_knight(line, col)
             case _:
                 logger.error(f"{piece.piece} Not implemented yet")
 
@@ -98,6 +100,22 @@ class Position:
                     break
                 cur_line += move_type[0]
                 cur_col += move_type[1]
+
+        return moves
+
+    def _get_moves_for_knight(self, line: int, col: int) -> list[str]:
+        moves: list[str] = []
+        # move and capture
+        for move_type in [(-2, 1), (-1, 2), (1, 2), (2, 1), (2, -1), (1, -2), (-1, -2), (-2, -1)]:
+            if (0 <= line + move_type[0] <= 7) and (0 <= col + move_type[1] <= 7):
+                if not self.board[line + move_type[0]][col + move_type[1]]:
+                    moves.append(
+                        f"N{Position._col_to_letter(col + move_type[1])}{self._line_to_board(line + move_type[0])}"
+                    )
+                elif self.board[line + move_type[0]][col + move_type[1]].color == "b":
+                    moves.append(
+                        f"Nx{Position._col_to_letter(col + move_type[1])}{self._line_to_board(line + move_type[0])}"
+                    )
 
         return moves
 
