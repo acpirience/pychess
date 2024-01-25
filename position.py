@@ -38,15 +38,15 @@ class Position:
 
         match piece.piece:
             case "P":  # Pawn
-                moves += self._get_moves_for_pawn(piece, line, col)
+                moves += self._get_moves_for_pawn(line, col)
             case "R":  # Rook
-                moves += self._get_moves_for_rook(piece, line, col)
+                moves += self._get_moves_for_rook(line, col)
             case _:
-                logger.error("Not implemented yet")
+                logger.error(f"{piece.piece} Not implemented yet")
 
         return moves
 
-    def _get_moves_for_pawn(self, piece: Piece, line: int, col: int) -> list[str]:
+    def _get_moves_for_pawn(self, line: int, col: int) -> list[str]:
         moves: list[str] = []
         # move
         if not self.board[line - 1][col]:  # Pawn move 1 square
@@ -76,7 +76,7 @@ class Position:
 
         return moves
 
-    def _get_moves_for_rook(self, piece: Piece, line: int, col: int) -> list[str]:
+    def _get_moves_for_rook(self, line: int, col: int) -> list[str]:
         moves: list[str] = []
         # moves
         for move_type in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
