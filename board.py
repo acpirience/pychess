@@ -8,7 +8,6 @@ import glob
 import os
 
 import pygame
-from loguru import logger
 
 from config import FONT_DIR, IMG_DIR
 from piece import Piece
@@ -40,7 +39,6 @@ class Board:
         # fonts
         # https://www.dafont.com/fr/coolvetica.font
         self.font_board_marks = pygame.font.Font(os.path.join(FONT_DIR, "coolvetica rg.otf"), 16)
-        logger.info("Loading font_board_marks: 'coolvetica rg.otf' 16")
 
         # Images : chess pieces
         # https://commons.wikimedia.org/wiki/Category:SVG_chess_pieces
@@ -51,7 +49,6 @@ class Board:
         ]
         for piece in png_list:
             self.piece_list[piece] = pygame.image.load(os.path.join(IMG_DIR, f"{piece}.png"))
-            logger.info(f"Loading image {piece}: {piece}.png")
 
     def update(self) -> None:
         pass

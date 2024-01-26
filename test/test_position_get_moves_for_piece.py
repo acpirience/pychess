@@ -18,7 +18,13 @@ def test_board() -> Board:
 
 @pytest.fixture
 def test_flags() -> dict[str, str | bool]:
-    return {"color": "w", "in_check": "", "previous_move": ""}
+    return {
+        "color": "w",
+        "in_check": "",
+        "wKing can castle": True,
+        "bKing can castle": True,
+        "previous_move": "",
+    }
 
 
 def test_full_board(test_board: Board, test_flags: dict[str, str | bool]) -> None:
