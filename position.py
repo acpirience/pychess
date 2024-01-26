@@ -45,6 +45,8 @@ class Position:
                 moves += self._get_moves_for_knight(line, col)
             case "B":  # Bishop
                 moves += self._get_moves_for_bishop(line, col)
+            case "Q":  # Bishop
+                moves += self._get_moves_for_queen(line, col)
             case _:
                 logger.error(f"{piece.piece} Not implemented yet")
 
@@ -142,6 +144,31 @@ class Position:
                         # square contains black piece => capture
                         moves.append(
                             f"B{Position._col_to_letter(col)}{self._line_to_board(line)}x{Position._col_to_letter(cur_col + move_type[1])}{self._line_to_board(cur_line + move_type[0])}"
+                        )
+                    # square not empty, next type of move
+                    break
+                cur_line += move_type[0]
+                cur_col += move_type[1]
+
+        return moves
+
+    def _get_moves_for_queen(self, line: int, col: int) -> list[str]:
+        moves: list[str] = []
+        # moves
+        for move_type in [(1, 1), (1, -1), (-1, 1), (-1, -1), (1, 0), (-1, 0), (0, 1), (0, -1)]:
+            cur_line, cur_col = line, col
+            # traverse all 8 directions
+            while (0 <= cur_line + move_type[0] <= 7) and (0 <= cur_col + move_type[1] <= 7):
+                if not self.board[cur_line + move_type[0]][cur_col + move_type[1]]:
+                    # empty square
+                    moves.append(
+                        f"Q{Position._col_to_letter(col)}{self._line_to_board(line)}{Position._col_to_letter(cur_col + move_type[1])}{self._line_to_board(cur_line + move_type[0])}"
+                    )
+                else:
+                    if self.board[cur_line + move_type[0]][cur_col + move_type[1]].color == "b":
+                        # square contains black piece => capture
+                        moves.append(
+                            f"Q{Position._col_to_letter(col)}{self._line_to_board(line)}x{Position._col_to_letter(cur_col + move_type[1])}{self._line_to_board(cur_line + move_type[0])}"
                         )
                     # square not empty, next type of move
                     break
