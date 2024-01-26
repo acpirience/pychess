@@ -10,7 +10,7 @@ from piece import Piece
 
 
 class Position:
-    def __init__(self, board: list[list[Piece]], flags: dict[str, str]) -> None:
+    def __init__(self, board: list[list[Piece]], flags: dict[str, str | bool]) -> None:
         self.board = board
         self.flags = flags
 
@@ -47,8 +47,8 @@ class Position:
                 moves += self._get_moves_for_bishop(line, col)
             case "Q":  # Bishop
                 moves += self._get_moves_for_queen(line, col)
-            case _:
-                logger.error(f"{piece.piece} Not implemented yet")
+            case "K":  # King
+                moves += self._get_moves_for_king(line, col)
 
         return moves
 
@@ -174,6 +174,40 @@ class Position:
                     break
                 cur_line += move_type[0]
                 cur_col += move_type[1]
+
+        return moves
+
+    def _get_moves_for_king(self, line: int, col: int) -> list[str]:
+        moves: list[str] = []
+        # move and capture
+        for move_type in [(-1, -1), (-1, 0), (-1, 1), (1, -1), (1, 0), (1, 1), (0, -1), (0, 1)]:
+            if (0 <= line + move_type[0] <= 7) and (0 <= col + move_type[1] <= 7):
+                if not self.board[line + move_type[0]][col + move_type[1]]:
+                    moves.append(
+                        f"K{Position._col_to_letter(col)}{self._line_to_board(line)}{Position._col_to_letter(col + move_type[1])}{self._line_to_board(line + move_type[0])}"
+                    )
+                elif self.board[line + move_type[0]][col + move_type[1]].color == "b":
+                    moves.append(
+                        f"K{Position._col_to_letter(col)}{self._line_to_board(line)}x{Position._col_to_letter(col + move_type[1])}{self._line_to_board(line + move_type[0])}"
+                    )
+        # castle
+        if self.flags[f"{self.flags['color']}King can castle"]:
+            # we assume king is in start position
+            if (
+                not self.board[line][col + 1]
+                and not self.board[line][col + 2]
+                and self.board[line][col + 3] == Piece("R", "w")
+            ):
+                # tbd test for check on line, col+1 and line, col+2
+                moves.append("0-0")
+            if (
+                not self.board[line][col - 1]
+                and not self.board[line][col - 2]
+                and not self.board[line][col - 3]
+                and self.board[line][col - 4] == Piece("R", "w")
+            ):
+                # tbd test for check on line, col+1 and line, col+2 and line, col+3
+                moves.append("0-0-0")
 
         return moves
 

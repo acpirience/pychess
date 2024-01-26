@@ -17,11 +17,11 @@ def test_board() -> Board:
 
 
 @pytest.fixture
-def test_flags() -> dict[str, str]:
+def test_flags() -> dict[str, str | bool]:
     return {"color": "w", "in_check": "", "previous_move": ""}
 
 
-def test_rook_move(test_board: Board, test_flags: dict[str, str]) -> None:
+def test_rook_move(test_board: Board, test_flags: dict[str, str | bool]) -> None:
     test_board.load_board_from_FEN("8/8/8/8/8/8/8/R7")
 
     test_position = Position(test_board.board_content, test_flags)
@@ -46,7 +46,7 @@ def test_rook_move(test_board: Board, test_flags: dict[str, str]) -> None:
     ]
 
 
-def test_black_rook_move(test_board: Board, test_flags: dict[str, str]) -> None:
+def test_black_rook_move(test_board: Board, test_flags: dict[str, str | bool]) -> None:
     test_board.load_board_from_FEN("8/8/8/3r4/8/8/8/8")
     test_flags["color"] = "b"
 
@@ -72,7 +72,7 @@ def test_black_rook_move(test_board: Board, test_flags: dict[str, str]) -> None:
     ]
 
 
-def test_rook_capture(test_board: Board, test_flags: dict[str, str]) -> None:
+def test_rook_capture(test_board: Board, test_flags: dict[str, str | bool]) -> None:
     test_board.load_board_from_FEN("r7/8/8/8/8/8/8/R7")
 
     test_position = Position(test_board.board_content, test_flags)
@@ -98,7 +98,7 @@ def test_rook_capture(test_board: Board, test_flags: dict[str, str]) -> None:
     ]
 
 
-def test_black_rook_capture(test_board: Board, test_flags: dict[str, str]) -> None:
+def test_black_rook_capture(test_board: Board, test_flags: dict[str, str | bool]) -> None:
     test_board.load_board_from_FEN("r7/8/8/8/8/8/8/R7")
     test_flags["color"] = "b"
 

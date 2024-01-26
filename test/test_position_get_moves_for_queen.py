@@ -17,11 +17,11 @@ def test_board() -> Board:
 
 
 @pytest.fixture
-def test_flags() -> dict[str, str]:
+def test_flags() -> dict[str, str | bool]:
     return {"color": "w", "in_check": "", "previous_move": ""}
 
 
-def test_queen_move(test_board: Board, test_flags: dict[str, str]) -> None:
+def test_queen_move(test_board: Board, test_flags: dict[str, str | bool]) -> None:
     test_board.load_board_from_FEN("8/8/8/8/4Q3/8/8/8")
 
     test_position = Position(test_board.board_content, test_flags)
@@ -59,7 +59,7 @@ def test_queen_move(test_board: Board, test_flags: dict[str, str]) -> None:
     ]
 
 
-def test_black_queen_move(test_board: Board, test_flags: dict[str, str]) -> None:
+def test_black_queen_move(test_board: Board, test_flags: dict[str, str | bool]) -> None:
     test_board.load_board_from_FEN("8/8/8/8/4q3/8/8/8")
     test_flags["color"] = "b"
 
@@ -98,7 +98,7 @@ def test_black_queen_move(test_board: Board, test_flags: dict[str, str]) -> None
     ]
 
 
-def test_queen_capture(test_board: Board, test_flags: dict[str, str]) -> None:
+def test_queen_capture(test_board: Board, test_flags: dict[str, str | bool]) -> None:
     test_board.load_board_from_FEN("r7/4p2p/8/8/r3Q2p/8/8/1b2n2b")
 
     test_position = Position(test_board.board_content, test_flags)

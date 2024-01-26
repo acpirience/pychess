@@ -17,11 +17,11 @@ def test_board() -> Board:
 
 
 @pytest.fixture
-def test_flags() -> dict[str, str]:
+def test_flags() -> dict[str, str | bool]:
     return {"color": "w", "in_check": "", "previous_move": ""}
 
 
-def test_full_board(test_board: Board, test_flags: dict[str, str]) -> None:
+def test_full_board(test_board: Board, test_flags: dict[str, str | bool]) -> None:
     # tbd when all pieces' moves are implemented
     test_board.load_board_from_FEN("rn4nr/pppppppp/8/8/8/8/PPPPPPPP/RN4NR")
 

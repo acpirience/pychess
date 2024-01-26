@@ -17,11 +17,11 @@ def test_board() -> Board:
 
 
 @pytest.fixture
-def test_flags() -> dict[str, str]:
+def test_flags() -> dict[str, str | bool]:
     return {"color": "w", "in_check": "", "previous_move": ""}
 
 
-def test_knight_move(test_board: Board, test_flags: dict[str, str]) -> None:
+def test_knight_move(test_board: Board, test_flags: dict[str, str | bool]) -> None:
     test_board.load_board_from_FEN("8/8/8/8/3N4/8/8/8")
 
     test_position = Position(test_board.board_content, test_flags)
@@ -40,7 +40,7 @@ def test_knight_move(test_board: Board, test_flags: dict[str, str]) -> None:
     ]
 
 
-def test_black_knight_move(test_board: Board, test_flags: dict[str, str]) -> None:
+def test_black_knight_move(test_board: Board, test_flags: dict[str, str | bool]) -> None:
     test_board.load_board_from_FEN("8/8/8/8/3n4/8/8/8")
     test_flags["color"] = "b"
 
@@ -60,7 +60,7 @@ def test_black_knight_move(test_board: Board, test_flags: dict[str, str]) -> Non
     ]
 
 
-def test_knight_capture(test_board: Board, test_flags: dict[str, str]) -> None:
+def test_knight_capture(test_board: Board, test_flags: dict[str, str | bool]) -> None:
     test_board.load_board_from_FEN("8/8/8/8/8/1n6/2n5/N7")
 
     test_position = Position(test_board.board_content, test_flags)
@@ -70,7 +70,7 @@ def test_knight_capture(test_board: Board, test_flags: dict[str, str]) -> None:
     assert possible_moves == ["Na1xb3", "Na1xc2"]
 
 
-def test_knight_blocked(test_board: Board, test_flags: dict[str, str]) -> None:
+def test_knight_blocked(test_board: Board, test_flags: dict[str, str | bool]) -> None:
     test_board.load_board_from_FEN("1n6/1Pp5/1pP5/1Pp5/1pP5/1Pp5/2P5/N7")
 
     test_position = Position(test_board.board_content, test_flags)

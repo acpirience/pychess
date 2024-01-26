@@ -15,3 +15,8 @@ class Piece:
 
     def __bool__(self) -> bool:
         return bool(self.__str__())
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Piece):
+            return False
+        return (self.piece == other.piece) and (self.color == other.color)
