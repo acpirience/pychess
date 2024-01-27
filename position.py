@@ -21,41 +21,35 @@ class Position:
         coords = Position._get_king_coords(board, str(self.flags["color"]))
         if coords == "ERROR":
             return False
-        return self.square_is_in_check(board, coords, color)
+        return self.square_is_attacked(board, coords, color)
 
-    def square_is_in_check(self, board: list[list[Piece]], coords: str, color: str) -> bool:
-        opponent_board = board
-        if color == "b":
-            coords = Position._invert_coords(coords)
-        opponent_moves = self._get_possible_moves(
-            opponent_board, Position._invert_color(color), add_pawn_capture=True
-        )
-        opponent_targets = [x[-2:] for x in opponent_moves]
-        if coords in opponent_targets:
-            return True
-        return False
+    def square_is_attacked(self, board: list[list[Piece]], coords: str, color: str) -> bool:
+        # square can be target of attack of color opposite of "color"
+        possible_targets = [
+            x[-2:] for x in self._get_possible_captures(board, Position._invert_color(color))
+        ]
+        return coords in possible_targets
 
     def _get_possible_moves(
-        self, board: list[list[Piece]], color: str, add_pawn_capture: bool = False
+        self, board: list[list[Piece]], color: str, capture_only: bool = False
     ) -> list[str]:
         # private method used internally by Board
-        if color == "b":
-            board = Position._invert_board(board)
-
         pieces = []
 
-        # get all pieces white color
+        # get all pieces of the current color
         for line in range(8):
             for col in range(8):
-                if board[line][col].color == "w":
+                if board[line][col].color == color:
                     pieces.append((board[line][col], line, col))
 
         moves = []
         for piece, line, col in pieces:
-            moves += self._get_moves_for_piece(board, piece, line, col, color, add_pawn_capture)
+            moves += self._get_moves_for_piece(board, piece, line, col, color, capture_only)
 
-        # logger.info(moves)
         return moves
+
+    def _get_possible_captures(self, board: list[list[Piece]], color: str) -> list[str]:
+        return self._get_possible_moves(board, color, capture_only=True)
 
     def _get_moves_for_piece(
         self,
@@ -64,13 +58,13 @@ class Position:
         line: int,
         col: int,
         color: str,
-        add_pawn_capture: bool,
+        capture_only: bool = False,
     ) -> list[str]:
         moves: list[str] = []
 
         match piece.piece:
             case "P":  # Pawn
-                moves += self._get_moves_for_pawn(board, line, col, color, add_pawn_capture)
+                moves += self._get_moves_for_pawn(board, line, col, color, capture_only)
             case "R":  # Rook
                 moves += self._get_moves_for_rook(board, line, col, color)
             case "N":  # Knight
@@ -80,54 +74,68 @@ class Position:
             case "Q":  # Bishop
                 moves += self._get_moves_for_queen(board, line, col, color)
             case "K":  # King
-                moves += self._get_moves_for_king(board, line, col, color)
+                moves += self._get_moves_for_king(board, line, col, color, capture_only)
 
         return moves
 
     def _get_moves_for_pawn(
-        self, board: list[list[Piece]], line: int, col: int, color: str, add_pawn_capture: bool
+        self, board: list[list[Piece]], line: int, col: int, color: str, capture_only: bool = False
     ) -> list[str]:
+        PAWN_MOVE_DIRECTION = -1 if color == "w" else 1
         moves: list[str] = []
         # move
-        if not board[line - 1][col]:  # Pawn move 1 square
-            moves.append(
-                f"{Position._xy_to_chess_coords(line, col, color)}"
-                f"{Position._xy_to_chess_coords(line - 1, col, color)}"
-            )
-            if line == 6:  # if first move can move 2 squares
-                if not board[line - 2][col]:
-                    moves.append(
-                        f"{Position._xy_to_chess_coords(line, col, color)}"
-                        f"{Position._xy_to_chess_coords(line -2, col, color)}"
-                    )
+        if not capture_only:
+            if not board[line + PAWN_MOVE_DIRECTION][col]:  # Pawn move 1 square
+                moves.append(
+                    f"{Position._xy_to_chess_coords(line, col)}"
+                    f"{Position._xy_to_chess_coords(line + PAWN_MOVE_DIRECTION, col)}"
+                )
+                if (line == 6 and color == "w") or (line == 1 and color == "b"):
+                    # if first move can move 2 squares
+                    if not board[line + PAWN_MOVE_DIRECTION * 2][col]:
+                        moves.append(
+                            f"{Position._xy_to_chess_coords(line, col)}"
+                            f"{Position._xy_to_chess_coords(line + PAWN_MOVE_DIRECTION * 2, col)}"
+                        )
         # capture
         for i in [-1, 1]:
             if 0 <= col + i <= 7:
-                if board[line - 1][col + i] and board[line - 1][col + i].color == "b":
+                if board[line + PAWN_MOVE_DIRECTION][col + i] and board[line + PAWN_MOVE_DIRECTION][
+                    col + i
+                ].color == Position._invert_color(color):
                     moves.append(
-                        f"{Position._xy_to_chess_coords(line, col, color)}"
-                        f"x{Position._xy_to_chess_coords(line - 1, col + i, color)}"
+                        f"{Position._xy_to_chess_coords(line, col)}"
+                        f"x{Position._xy_to_chess_coords(line + PAWN_MOVE_DIRECTION, col + i)}"
                     )
-                if add_pawn_capture:  # special case for pawn used by square_is_in_check
-                    if not board[line - 1][col + i]:
-                        moves.append(
-                            f"{Position._xy_to_chess_coords(line, col, color)}"
-                            f"x{Position._xy_to_chess_coords(line - 1, col + i, color)}"
-                        )
+                if capture_only and not board[line + PAWN_MOVE_DIRECTION][col + i]:
+                    moves.append(
+                        f"{Position._xy_to_chess_coords(line, col)}"
+                        f"x{Position._xy_to_chess_coords(line + PAWN_MOVE_DIRECTION, col + i)}"
+                    )
 
         # en passant
-        if line == 3:  # only line where pawn can capture "en passant"
+        if (line == 3 and color == "w") or (line == 4 and color == "b"):
+            # only line where pawn can capture "en passant"
             for i in [-1, 1]:
                 if 0 <= col + i <= 7:
                     # previous move was a pawn moving 2 squares on left or right of pawn
                     if (
                         str(self.flags["previous_move"])[-2:]
-                        == f"{Position._xy_to_chess_coords(line, col + i, color)}"
+                        == f"{Position._xy_to_chess_coords(line, col + i)}"  # end square is beside pawn
+                        and len(str(self.flags["previous_move"]))
+                        == 4  # pawn move is 4 length string
+                        and abs(
+                            int(str(self.flags["previous_move"])[-1])
+                            - int(str(self.flags["previous_move"])[-3])
+                        )
+                        == 2  # 2 square move
                     ):
                         moves.append(
-                            f"{Position._xy_to_chess_coords(line, col, color)}"
-                            f"x{Position._xy_to_chess_coords(line - 1, col + i, color)}"
+                            f"{Position._xy_to_chess_coords(line, col)}"
+                            f"x{Position._xy_to_chess_coords(line + PAWN_MOVE_DIRECTION, col + i)}"
                         )
+
+        # promotion TBD
 
         return moves
 
@@ -143,15 +151,17 @@ class Position:
                 if not board[cur_line + move_type[0]][cur_col + move_type[1]]:
                     # empty square
                     moves.append(
-                        f"R{Position._xy_to_chess_coords(line, col, color)}"
-                        f"{Position._xy_to_chess_coords(cur_line + move_type[0], cur_col + move_type[1], color)}"
+                        f"R{Position._xy_to_chess_coords(line, col)}"
+                        f"{Position._xy_to_chess_coords(cur_line + move_type[0], cur_col + move_type[1])}"
                     )
                 else:
-                    if board[cur_line + move_type[0]][cur_col + move_type[1]].color == "b":
+                    if board[cur_line + move_type[0]][
+                        cur_col + move_type[1]
+                    ].color == Position._invert_color(color):
                         # square contains black piece => capture
                         moves.append(
-                            f"R{Position._xy_to_chess_coords(line, col, color)}"
-                            f"x{Position._xy_to_chess_coords(cur_line + move_type[0], cur_col + move_type[1], color)}"
+                            f"R{Position._xy_to_chess_coords(line, col)}"
+                            f"x{Position._xy_to_chess_coords(cur_line + move_type[0], cur_col + move_type[1])}"
                         )
                     # square not empty, next type of move
                     break
@@ -169,13 +179,15 @@ class Position:
             if (0 <= line + move_type[0] <= 7) and (0 <= col + move_type[1] <= 7):
                 if not board[line + move_type[0]][col + move_type[1]]:
                     moves.append(
-                        f"N{Position._xy_to_chess_coords(line, col, color)}"
-                        f"{Position._xy_to_chess_coords(line + move_type[0], col + move_type[1], color)}"
+                        f"N{Position._xy_to_chess_coords(line, col)}"
+                        f"{Position._xy_to_chess_coords(line + move_type[0], col + move_type[1])}"
                     )
-                elif board[line + move_type[0]][col + move_type[1]].color == "b":
+                elif board[line + move_type[0]][col + move_type[1]].color == Position._invert_color(
+                    color
+                ):
                     moves.append(
-                        f"N{Position._xy_to_chess_coords(line, col, color)}"
-                        f"x{Position._xy_to_chess_coords(line + move_type[0], col + move_type[1], color)}"
+                        f"N{Position._xy_to_chess_coords(line, col)}"
+                        f"x{Position._xy_to_chess_coords(line + move_type[0], col + move_type[1])}"
                     )
 
         return moves
@@ -192,15 +204,17 @@ class Position:
                 if not board[cur_line + move_type[0]][cur_col + move_type[1]]:
                     # empty square
                     moves.append(
-                        f"B{Position._xy_to_chess_coords(line, col, color)}"
-                        f"{Position._xy_to_chess_coords(cur_line + move_type[0], cur_col + move_type[1], color)}"
+                        f"B{Position._xy_to_chess_coords(line, col)}"
+                        f"{Position._xy_to_chess_coords(cur_line + move_type[0], cur_col + move_type[1])}"
                     )
                 else:
-                    if board[cur_line + move_type[0]][cur_col + move_type[1]].color == "b":
-                        # square contains black piece => capture
+                    if board[cur_line + move_type[0]][
+                        cur_col + move_type[1]
+                    ].color == Position._invert_color(color):
+                        # square contains opposite color piece => capture
                         moves.append(
-                            f"B{Position._xy_to_chess_coords(line, col, color)}"
-                            f"x{Position._xy_to_chess_coords(cur_line + move_type[0], cur_col + move_type[1], color)}"
+                            f"B{Position._xy_to_chess_coords(line, col)}"
+                            f"x{Position._xy_to_chess_coords(cur_line + move_type[0], cur_col + move_type[1])}"
                         )
                     # square not empty, next type of move
                     break
@@ -221,15 +235,17 @@ class Position:
                 if not board[cur_line + move_type[0]][cur_col + move_type[1]]:
                     # empty square
                     moves.append(
-                        f"Q{Position._xy_to_chess_coords(line, col, color)}"
-                        f"{Position._xy_to_chess_coords(cur_line + move_type[0], cur_col + move_type[1], color)}"
+                        f"Q{Position._xy_to_chess_coords(line, col)}"
+                        f"{Position._xy_to_chess_coords(cur_line + move_type[0], cur_col + move_type[1])}"
                     )
                 else:
-                    if board[cur_line + move_type[0]][cur_col + move_type[1]].color == "b":
+                    if board[cur_line + move_type[0]][
+                        cur_col + move_type[1]
+                    ].color == Position._invert_color(color):
                         # square contains black piece => capture
                         moves.append(
-                            f"Q{Position._xy_to_chess_coords(line, col, color)}"
-                            f"x{Position._xy_to_chess_coords(cur_line + move_type[0], cur_col + move_type[1], color)}"
+                            f"Q{Position._xy_to_chess_coords(line, col)}"
+                            f"x{Position._xy_to_chess_coords(cur_line + move_type[0], cur_col + move_type[1])}"
                         )
                     # square not empty, next type of move
                     break
@@ -239,7 +255,7 @@ class Position:
         return moves
 
     def _get_moves_for_king(
-        self, board: list[list[Piece]], line: int, col: int, color: str
+        self, board: list[list[Piece]], line: int, col: int, color: str, capture_only: bool = False
     ) -> list[str]:
         moves: list[str] = []
         # move and capture
@@ -247,53 +263,52 @@ class Position:
             if (0 <= line + move_type[0] <= 7) and (0 <= col + move_type[1] <= 7):
                 if not board[line + move_type[0]][col + move_type[1]]:
                     moves.append(
-                        f"K{Position._xy_to_chess_coords(line, col, color)}"
-                        f"{Position._xy_to_chess_coords(line + move_type[0], col + move_type[1], color)}"
+                        f"K{Position._xy_to_chess_coords(line, col)}"
+                        f"{Position._xy_to_chess_coords(line + move_type[0], col + move_type[1])}"
                     )
-                elif board[line + move_type[0]][col + move_type[1]].color == "b":
+                elif board[line + move_type[0]][col + move_type[1]].color == Position._invert_color(
+                    color
+                ):
                     moves.append(
-                        f"K{Position._xy_to_chess_coords(line, col, color)}"
-                        f"x{Position._xy_to_chess_coords(line + move_type[0], col + move_type[1], color)}"
+                        f"K{Position._xy_to_chess_coords(line, col)}"
+                        f"x{Position._xy_to_chess_coords(line + move_type[0], col + move_type[1])}"
                     )
         # castle
-        if self.flags[f"{self.flags['color']}King can castle"] and line == 7 and col == 4:
+        if capture_only or not self.flags[f"{self.flags['color']}King can castle"]:
+            return moves
+
+        if (line == 7 and col == 4 and color == "w") or (line == 0 and col == 4 and color == "b"):
             if (
                 not board[line][col + 1]
                 and not board[line][col + 2]
-                and board[line][col + 3] == Piece("R", "w")
+                and board[line][col + 3] == Piece("R", color)
             ):
-                if not self.square_is_in_check(board, "f1", "w") and not self.square_is_in_check(
-                    board, "g1", "w"
+                if not self.square_is_attacked(
+                    board, Position._xy_to_chess_coords(line, col + 1), color
+                ) and not self.square_is_attacked(
+                    board, Position._xy_to_chess_coords(line, col + 2), color
                 ):
                     moves.append("0-0")
             if (
                 not board[line][col - 1]
                 and not board[line][col - 2]
                 and not board[line][col - 3]
-                and board[line][col - 4] == Piece("R", "w")
+                and board[line][col - 4] == Piece("R", color)
             ):
                 if (
-                    not self.square_is_in_check(board, "d1", "w")
-                    and not self.square_is_in_check(board, "c1", "w")
-                    and not self.square_is_in_check(board, "b1", "w")
+                    not self.square_is_attacked(
+                        board, Position._xy_to_chess_coords(line, col - 1), color
+                    )
+                    and not self.square_is_attacked(
+                        board, Position._xy_to_chess_coords(line, col - 2), color
+                    )
+                    and not self.square_is_attacked(
+                        board, Position._xy_to_chess_coords(line, col - 2), color
+                    )
                 ):
                     moves.append("0-0-0")
 
         return moves
-
-    @staticmethod
-    def _invert_board(board: list[list[Piece]]) -> list[list[Piece]]:
-        new_board = []
-        for line in reversed(board):
-            new_line = []
-            for piece in line:
-                if piece:
-                    new_line.append(Piece(piece.piece, Position._invert_color(piece.color)))
-                else:
-                    new_line.append(Piece())
-            new_board.append(new_line)
-
-        return new_board
 
     @staticmethod
     def _invert_coords(coords: str) -> str:
@@ -310,19 +325,17 @@ class Position:
         return f"{chr(col + 97)}"
 
     @staticmethod
-    def _line_to_board(line: int, color: str) -> int:
-        if color == "w":
-            return 8 - line
-        return line + 1
+    def _line_to_board(line: int) -> int:
+        return 8 - line
 
     @staticmethod
-    def _xy_to_chess_coords(line: int, col: int, color: str) -> str:
-        return f"{Position._col_to_letter(col)}{Position._line_to_board(line, color)}"
+    def _xy_to_chess_coords(line: int, col: int) -> str:
+        return f"{Position._col_to_letter(col)}{Position._line_to_board(line)}"
 
     @staticmethod
     def _get_king_coords(board: list[list[Piece]], color: str) -> str:
         for line in range(8):
             for col in range(8):
                 if board[line][col] == Piece("K", color):
-                    return Position._xy_to_chess_coords(line, col, color)
+                    return Position._xy_to_chess_coords(line, col)
         return "ERROR"  # should never be reached

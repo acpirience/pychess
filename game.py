@@ -14,7 +14,7 @@ from config import FONT_DIR
 from position import Position
 
 FEN_INITIAL_BOARD = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
-FEN_INITIAL_BOARD = "8/1p4k1/8/8/8/8/8/8"
+FEN_INITIAL_BOARD = "8/8/8/8/8/8/5p2/RNBQKBNR"
 
 BOARD_SIZE = (SQUARE_SIZE * 8) + (BORDER_SIZE * 2)
 
@@ -28,9 +28,9 @@ class Game:
         self.flags: dict[str, str | bool] = {
             "color": "w",
             "in_check": "",
-            "wKing can castle": False,
+            "wKing can castle": True,
             "bKing can castle": True,
-            "previous_move": "",
+            "previous_move": "a7a5",
         }
         self.turn = 1
 
@@ -45,9 +45,7 @@ class Game:
         self.position = Position(self.board.board_content, self.flags)
         self.possible_moves = self.position.get_possible_moves()
         logger.info(self.possible_moves)
-        logger.info(
-            f"{self.position.square_is_in_check(self.board.board_content, 'a6' ,str(self.flags['color']))=}"
-        )
+        logger.info(self.position.king_is_in_check(self.board.board_content, "w"))
 
     def _load_assets(self) -> None:
         # load assets used by the object
