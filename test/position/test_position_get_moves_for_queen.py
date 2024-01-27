@@ -31,7 +31,7 @@ def test_queen_move(test_board: Board, test_flags: dict[str, str | bool]) -> Non
     test_board.load_board_from_FEN("8/8/8/8/4Q3/8/8/8")
 
     test_position = Position(test_board.board_content, test_flags)
-    possible_moves = test_position.get_possible_moves()
+    possible_moves = test_position.get_valid_moves()
 
     possible_moves.sort()
     assert possible_moves == [
@@ -70,7 +70,7 @@ def test_black_queen_move(test_board: Board, test_flags: dict[str, str | bool]) 
     test_flags["color"] = "b"
 
     test_position = Position(test_board.board_content, test_flags)
-    possible_moves = test_position.get_possible_moves()
+    possible_moves = test_position.get_valid_moves()
 
     possible_moves.sort()
     assert possible_moves == [
@@ -108,7 +108,7 @@ def test_queen_capture(test_board: Board, test_flags: dict[str, str | bool]) -> 
     test_board.load_board_from_FEN("r7/4p2p/8/8/r3Q2p/8/8/1b2n2b")
 
     test_position = Position(test_board.board_content, test_flags)
-    possible_moves = test_position.get_possible_moves()
+    possible_moves = test_position.get_valid_moves()
 
     possible_moves.sort()
     assert possible_moves == [

@@ -31,7 +31,7 @@ def test_bishop_move(test_board: Board, test_flags: dict[str, str | bool]) -> No
     test_board.load_board_from_FEN("8/8/8/8/3B4/8/8/8")
 
     test_position = Position(test_board.board_content, test_flags)
-    possible_moves = test_position.get_possible_moves()
+    possible_moves = test_position.get_valid_moves()
 
     possible_moves.sort()
     assert possible_moves == [
@@ -56,7 +56,7 @@ def test_black_bishop_move(test_board: Board, test_flags: dict[str, str | bool])
     test_flags["color"] = "b"
 
     test_position = Position(test_board.board_content, test_flags)
-    possible_moves = test_position.get_possible_moves()
+    possible_moves = test_position.get_valid_moves()
 
     possible_moves.sort()
     assert possible_moves == [
@@ -80,7 +80,7 @@ def test_bishop_capture(test_board: Board, test_flags: dict[str, str | bool]) ->
     test_board.load_board_from_FEN("8/8/8/8/8/2b6/8/B7")
 
     test_position = Position(test_board.board_content, test_flags)
-    possible_moves = test_position.get_possible_moves()
+    possible_moves = test_position.get_valid_moves()
 
     possible_moves.sort()
     assert possible_moves == ["Ba1b2", "Ba1xc3"]
@@ -90,7 +90,7 @@ def test_blocked_blocked(test_board: Board, test_flags: dict[str, str | bool]) -
     test_board.load_board_from_FEN("1p6/1P6/1P6/1P6/1P6/1P6/1P6/B7")
 
     test_position = Position(test_board.board_content, test_flags)
-    possible_moves = test_position.get_possible_moves()
+    possible_moves = test_position.get_valid_moves()
 
     possible_moves.sort()
     assert possible_moves == []

@@ -32,7 +32,7 @@ def test_full_board(test_board: Board, test_flags: dict[str, str | bool]) -> Non
     test_board.load_board_from_FEN("rn4nr/pppppppp/8/8/8/8/PPPPPPPP/RN4NR")
 
     test_position = Position(test_board.board_content, test_flags)
-    possible_moves = test_position.get_possible_moves()
+    possible_moves = test_position.get_valid_moves()
 
     possible_moves.sort()
     assert possible_moves == [

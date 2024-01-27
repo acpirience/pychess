@@ -5,7 +5,14 @@ Object used to analyse a position during a game
 """
 
 
+import copy
+
 from piece import Piece
+
+CASTLE_MOVES = {
+    "0-0": {"w": ["e1g1", "h1f1"], "b": ["e8g8", "h8f8"]},
+    "0-0-0": {"w": ["e1c1", "a1d1"], "b": ["e8c8", "a8d8"]},
+}
 
 
 class Position:
@@ -13,9 +20,9 @@ class Position:
         self.board = board
         self.flags = flags
 
-    def get_possible_moves(self) -> list[str]:
+    def get_valid_moves(self) -> list[str]:
         # public method used by Game object
-        return self._get_possible_moves(self.board, str(self.flags["color"]))
+        return self._get_valid_moves(self.board, str(self.flags["color"]))
 
     def king_is_in_check(self, board: list[list[Piece]], color: str) -> bool:
         coords = Position._get_king_coords(board, str(self.flags["color"]))
@@ -29,6 +36,11 @@ class Position:
             x[-2:] for x in self._get_possible_captures(board, Position._invert_color(color))
         ]
         return coords in possible_targets
+
+    def _get_valid_moves(self, board: list[list[Piece]], color: str) -> list[str]:
+        possible_moves = self._get_possible_moves(board, color)
+        valid_moves = [x for x in possible_moves if not self.in_check_after_move(x, board, color)]
+        return valid_moves
 
     def _get_possible_moves(
         self, board: list[list[Piece]], color: str, capture_only: bool = False
@@ -47,6 +59,10 @@ class Position:
             moves += self._get_moves_for_piece(board, piece, line, col, color, capture_only)
 
         return moves
+
+    def in_check_after_move(self, move: str, board: list[list[Piece]], color: str) -> bool:
+        board_after_move = self.get_board_after_move(move, board, color)
+        return self.king_is_in_check(board_after_move, color)
 
     def _get_possible_captures(self, board: list[list[Piece]], color: str) -> list[str]:
         return self._get_possible_moves(board, color, capture_only=True)
@@ -310,6 +326,27 @@ class Position:
 
         return moves
 
+    def get_board_after_move(
+        self, move: str, board: list[list[Piece]], color: str
+    ) -> list[list[Piece]]:
+        board_after_move = copy.deepcopy(board)
+        if not move.startswith("0"):
+            move = move.replace("x", "")
+            self.move_piece(move, board_after_move)
+        else:
+            # castle
+            castle_moves = CASTLE_MOVES[move][color]
+            for castle_move in castle_moves:
+                self.move_piece(castle_move, board_after_move)
+
+        return board_after_move
+
+    def move_piece(self, move: str, board: list[list[Piece]]) -> None:
+        line_start, col_start = Position._square_coords_to_xy_coords(move[-4:-2])
+        line_end, col_end = Position._square_coords_to_xy_coords(move[-2:])
+        board[line_end][col_end] = board[line_start][col_start]
+        board[line_start][col_start] = Piece()
+
     @staticmethod
     def _invert_coords(coords: str) -> str:
         return f"{coords[0]}{9 - int(str(coords[1]))}"
@@ -331,6 +368,12 @@ class Position:
     @staticmethod
     def _xy_to_chess_coords(line: int, col: int) -> str:
         return f"{Position._col_to_letter(col)}{Position._line_to_board(line)}"
+
+    @staticmethod
+    def _square_coords_to_xy_coords(square: str) -> tuple[int, int]:
+        line = 8 - int(square[-1:])
+        col = ord(square[0]) - 97
+        return line, col
 
     @staticmethod
     def _get_king_coords(board: list[list[Piece]], color: str) -> str:
