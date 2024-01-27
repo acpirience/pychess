@@ -19,21 +19,25 @@ class Position:
 
     def king_is_in_check(self, board: list[list[Piece]], color: str) -> bool:
         coords = Position._get_king_coords(board, str(self.flags["color"]))
-        if color == "b":
-            coords = Position._invert_coords(coords)
+        if coords == "ERROR":
+            return False
         return self.square_is_in_check(board, coords, color)
 
     def square_is_in_check(self, board: list[list[Piece]], coords: str, color: str) -> bool:
         opponent_board = board
-        if not coords:
-            coords = Position._get_king_coords(opponent_board, Position._invert_color(color))
-        opponent_moves = self._get_possible_moves(opponent_board, Position._invert_color(color))
+        if color == "b":
+            coords = Position._invert_coords(coords)
+        opponent_moves = self._get_possible_moves(
+            opponent_board, Position._invert_color(color), add_pawn_capture=True
+        )
         opponent_targets = [x[-2:] for x in opponent_moves]
         if coords in opponent_targets:
             return True
         return False
 
-    def _get_possible_moves(self, board: list[list[Piece]], color: str) -> list[str]:
+    def _get_possible_moves(
+        self, board: list[list[Piece]], color: str, add_pawn_capture: bool = False
+    ) -> list[str]:
         # private method used internally by Board
         if color == "b":
             board = Position._invert_board(board)
@@ -48,19 +52,25 @@ class Position:
 
         moves = []
         for piece, line, col in pieces:
-            moves += self._get_moves_for_piece(board, piece, line, col, color)
+            moves += self._get_moves_for_piece(board, piece, line, col, color, add_pawn_capture)
 
         # logger.info(moves)
         return moves
 
     def _get_moves_for_piece(
-        self, board: list[list[Piece]], piece: Piece, line: int, col: int, color: str
+        self,
+        board: list[list[Piece]],
+        piece: Piece,
+        line: int,
+        col: int,
+        color: str,
+        add_pawn_capture: bool,
     ) -> list[str]:
         moves: list[str] = []
 
         match piece.piece:
             case "P":  # Pawn
-                moves += self._get_moves_for_pawn(board, line, col, color)
+                moves += self._get_moves_for_pawn(board, line, col, color, add_pawn_capture)
             case "R":  # Rook
                 moves += self._get_moves_for_rook(board, line, col, color)
             case "N":  # Knight
@@ -75,7 +85,7 @@ class Position:
         return moves
 
     def _get_moves_for_pawn(
-        self, board: list[list[Piece]], line: int, col: int, color: str
+        self, board: list[list[Piece]], line: int, col: int, color: str, add_pawn_capture: bool
     ) -> list[str]:
         moves: list[str] = []
         # move
@@ -98,13 +108,20 @@ class Position:
                         f"{Position._xy_to_chess_coords(line, col, color)}"
                         f"x{Position._xy_to_chess_coords(line - 1, col + i, color)}"
                     )
+                if add_pawn_capture:  # special case for pawn used by square_is_in_check
+                    if not board[line - 1][col + i]:
+                        moves.append(
+                            f"{Position._xy_to_chess_coords(line, col, color)}"
+                            f"x{Position._xy_to_chess_coords(line - 1, col + i, color)}"
+                        )
+
         # en passant
         if line == 3:  # only line where pawn can capture "en passant"
             for i in [-1, 1]:
                 if 0 <= col + i <= 7:
                     # previous move was a pawn moving 2 squares on left or right of pawn
                     if (
-                        self.flags["previous_move"]
+                        str(self.flags["previous_move"])[-2:]
                         == f"{Position._xy_to_chess_coords(line, col + i, color)}"
                     ):
                         moves.append(
@@ -239,23 +256,28 @@ class Position:
                         f"x{Position._xy_to_chess_coords(line + move_type[0], col + move_type[1], color)}"
                     )
         # castle
-        if self.flags[f"{self.flags['color']}King can castle"]:
-            # we assume king is in start position
+        if self.flags[f"{self.flags['color']}King can castle"] and line == 7 and col == 4:
             if (
                 not board[line][col + 1]
                 and not board[line][col + 2]
                 and board[line][col + 3] == Piece("R", "w")
             ):
-                # tbd test for check on line, col+1 and line, col+2
-                moves.append("0-0")
+                if not self.square_is_in_check(board, "f1", "w") and not self.square_is_in_check(
+                    board, "g1", "w"
+                ):
+                    moves.append("0-0")
             if (
                 not board[line][col - 1]
                 and not board[line][col - 2]
                 and not board[line][col - 3]
                 and board[line][col - 4] == Piece("R", "w")
             ):
-                # tbd test for check on line, col+1 and line, col+2 and line, col+3
-                moves.append("0-0-0")
+                if (
+                    not self.square_is_in_check(board, "d1", "w")
+                    and not self.square_is_in_check(board, "c1", "w")
+                    and not self.square_is_in_check(board, "b1", "w")
+                ):
+                    moves.append("0-0-0")
 
         return moves
 
@@ -304,15 +326,3 @@ class Position:
                 if board[line][col] == Piece("K", color):
                     return Position._xy_to_chess_coords(line, col, color)
         return "ERROR"  # should never be reached
-
-    @staticmethod
-    def pretty_print_board(board: list[list[Piece]]) -> str:
-        ret: str = "\n"
-        for line in board:
-            for piece in line:
-                if piece:
-                    ret += f"{piece} "
-                else:
-                    ret += "   "
-            ret += "\n"
-        return ret

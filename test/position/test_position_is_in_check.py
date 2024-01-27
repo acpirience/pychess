@@ -78,3 +78,11 @@ def test_black_king_in_check_by_rook(test_board: Board, test_flags: dict[str, st
 
     test_position = Position(test_board.board_content, test_flags)
     assert test_position.king_is_in_check(test_board.board_content, str(test_flags["color"]))
+
+
+def test_no_chess_if_no_king(test_board: Board, test_flags: dict[str, str | bool]) -> None:
+    # avoid crashing if no king on the board for tests
+    test_board.load_board_from_FEN("8/8/8/8/8/8/8/8")
+
+    test_position = Position(test_board.board_content, test_flags)
+    assert not test_position.king_is_in_check(test_board.board_content, str(test_flags["color"]))
