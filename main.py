@@ -63,7 +63,7 @@ class Chess:
                 self.mouse_coords = pygame.mouse.get_pos()
 
             if event.type == pygame.MOUSEBUTTONUP:
-                self.mouse_clicked["BUTTONUP"] = True
+                self.mouse_clicked["BUTTONDOwN"] = False
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 self.mouse_clicked["BUTTONDOWN"] = True
@@ -71,6 +71,7 @@ class Chess:
     def update(self) -> None:
         self.game.board.mouse_coords = self.mouse_coords
         self.game.board.mouse_clicked = self.mouse_clicked
+        self.game.update()
 
     def render(self) -> None:
         self.game_canvas.fill(pygame.Color("Dark Green"))

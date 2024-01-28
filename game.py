@@ -13,7 +13,6 @@ from config import FONT_DIR
 from position import Position
 
 FEN_INITIAL_BOARD = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
-FEN_INITIAL_BOARD = "rnbqkbnr/ppp2ppp/8/3pp3/P3P3/8/1PPP1PPP/RNBQKBNR"
 
 BOARD_SIZE = (SQUARE_SIZE * 8) + (BORDER_SIZE * 2)
 
@@ -52,7 +51,7 @@ class Game:
         self.font_turn = pygame.font.Font(os.path.join(FONT_DIR, "coolvetica rg.otf"), 24)
 
     def update(self) -> None:
-        pass
+        self.board.update()
 
     def render(self, game_canvas: pygame.Surface) -> None:
         # render Board and game informations on screen

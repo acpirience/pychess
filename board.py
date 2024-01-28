@@ -24,6 +24,8 @@ SQUARE_SIZE = 100
 BORDER_SIZE = 25
 BOARD_SIZE = 8 * SQUARE_SIZE
 
+NULL_COORDS = (99, 99)
+
 
 class Board:
     def __init__(
@@ -37,6 +39,10 @@ class Board:
         # Mouse
         self.mouse_coords: tuple[int, int] = (0, 0)
         self.mouse_clicked: dict[str, bool]
+        self.drag = False
+        self.drag_from: tuple[int, int] = NULL_COORDS  # forbidden value to keep mypy happy
+        self.drag_piece = Piece()
+
         self.move_map: dict[tuple[int, int], list[tuple[int, int]]] = {}
 
     def _load_assets(self) -> None:
@@ -57,7 +63,15 @@ class Board:
             self.piece_list[piece] = pygame.image.load(os.path.join(IMG_DIR, f"{piece}.png"))
 
     def update(self) -> None:
-        pass
+        if self.mouse_clicked["BUTTONDOWN"] and not self.drag:
+            coords = self.mouse_to_grid()
+            if coords and coords in self.move_map:
+                self.drag_piece = self.board_content[coords[0]][coords[1]]
+                if self.drag_piece:
+                    self.drag = True
+                    self.drag_from = coords
+            else:
+                self.mouse_clicked["BUTTONDOWN"] = False
 
     def render(self, game_canvas: pygame.Surface) -> None:
         # render board on screen
@@ -72,6 +86,38 @@ class Board:
         self._render_marks(game_canvas)
         self._render_pieces(game_canvas)
         self._render_mouse_over(game_canvas)
+        self._render_debug(game_canvas)
+
+    def _render_debug(self, game_canvas: pygame.Surface) -> None:
+        coords = self.mouse_to_grid()
+        debug_string = f"{self.mouse_coords} {coords} "
+        if not coords == NULL_COORDS:
+            debug_string += str(self.board_content[coords[0]][coords[1]])
+
+        game_canvas.blit(
+            self.font_board_marks.render(
+                debug_string,
+                True,
+                pygame.Color("White"),
+            ),
+            (BOARD_SIZE + BORDER_SIZE * 2, BOARD_SIZE),
+        )
+
+        for line in range(8):
+            board = f"line {line}: "
+            for col in range(8):
+                if self.board_content[line][col]:
+                    board += str(self.board_content[line][col]) + " "
+                else:
+                    board += "   "
+            game_canvas.blit(
+                self.font_board_marks.render(
+                    board,
+                    True,
+                    pygame.Color("White"),
+                ),
+                (BOARD_SIZE + BORDER_SIZE * 2, BORDER_SIZE * 5 + BORDER_SIZE * line),
+            )
 
     def _render_board(self, game_canvas: pygame.Surface) -> None:
         for x in range(8):
@@ -134,21 +180,11 @@ class Board:
             game_canvas.blit(pygame.transform.rotate(text, 180), text_rect)
 
     def _render_mouse_over(self, game_canvas: pygame.Surface) -> None:
-        if (BORDER_SIZE < self.mouse_coords[0] < BORDER_SIZE + BOARD_SIZE) and (
-            BORDER_SIZE < self.mouse_coords[1] < BORDER_SIZE + BOARD_SIZE
-        ):
-            line = (self.mouse_coords[1] - BORDER_SIZE) // SQUARE_SIZE
-            col = (self.mouse_coords[0] - BORDER_SIZE) // SQUARE_SIZE
-            square = pygame.Rect(
-                (
-                    BORDER_SIZE + (col % 8) * SQUARE_SIZE,
-                    BORDER_SIZE + (line % 8) * SQUARE_SIZE,
-                ),
-                (SQUARE_SIZE, SQUARE_SIZE),
-            )
-            pygame.draw.rect(game_canvas, pygame.Color("white"), square, 5, 5)
-
-            if (line, col) in self.move_map:
+        coords = self.mouse_to_grid()
+        if coords:
+            line, col = coords
+            # lines and targets except dragged piece
+            if (line, col) in self.move_map and not self.drag:
                 for target_line, target_col in self.move_map[(line, col)]:
                     center_start = (
                         BORDER_SIZE
@@ -173,6 +209,52 @@ class Board:
                     )
                     self._render_move(game_canvas, center_end)
 
+            # lines and targets for dragged piece
+            if self.drag:
+                line, col = self.drag_from
+                for target_line, target_col in self.move_map[line, col]:
+                    center_start = (
+                        BORDER_SIZE
+                        + SQUARE_SIZE / 2
+                        + col * SQUARE_SIZE
+                        + BORDER_SIZE * Board.sign(target_col - col),
+                        BORDER_SIZE
+                        + SQUARE_SIZE / 2
+                        + line * SQUARE_SIZE
+                        + BORDER_SIZE * Board.sign(target_line - line),
+                    )
+                    center_end = (
+                        BORDER_SIZE + SQUARE_SIZE / 2 + target_col * SQUARE_SIZE,
+                        BORDER_SIZE + SQUARE_SIZE / 2 + target_line * SQUARE_SIZE,
+                    )
+                    self._render_line(game_canvas, center_start, center_end)
+
+                for target_line, target_col in self.move_map[(line, col)]:
+                    center_end = (
+                        BORDER_SIZE + SQUARE_SIZE / 2 + target_col * SQUARE_SIZE,
+                        BORDER_SIZE + SQUARE_SIZE / 2 + target_line * SQUARE_SIZE,
+                    )
+                    self._render_move(game_canvas, center_end)
+
+            # square highlight
+            line, col = coords
+            highlight_color = pygame.Color("White")
+            if (
+                self.drag
+                and coords not in self.move_map[self.drag_from]
+                and coords != self.drag_from
+            ):
+                highlight_color = pygame.Color("Red")
+
+            square = pygame.Rect(
+                (
+                    BORDER_SIZE + (col % 8) * SQUARE_SIZE,
+                    BORDER_SIZE + (line % 8) * SQUARE_SIZE,
+                ),
+                (SQUARE_SIZE, SQUARE_SIZE),
+            )
+            pygame.draw.rect(game_canvas, highlight_color, square, 5, 5)
+
     def _render_line(
         self, game_canvas: pygame.Surface, start: tuple[float, float], end: tuple[float, float]
     ) -> None:
@@ -189,15 +271,27 @@ class Board:
             cur_col = 0
             while cur_col < 8:
                 if line[cur_col]:
-                    game_canvas.blit(
-                        self.piece_list[f"{line[cur_col]}"],
-                        (
-                            BORDER_SIZE + (SQUARE_SIZE * cur_col),
-                            BORDER_SIZE + (SQUARE_SIZE * cur_line),
-                        ),
-                    )
+                    if not (
+                        self.drag_from != NULL_COORDS and (cur_line, cur_col) == self.drag_from
+                    ):
+                        game_canvas.blit(
+                            self.piece_list[f"{line[cur_col]}"],
+                            (
+                                BORDER_SIZE + (SQUARE_SIZE * cur_col),
+                                BORDER_SIZE + (SQUARE_SIZE * cur_line),
+                            ),
+                        )
                 cur_col += 1
             cur_line += 1
+
+        if not self.drag_from == NULL_COORDS:
+            game_canvas.blit(
+                self.piece_list[f"{self.board_content[self.drag_from[0]][self.drag_from[1]]}"],
+                (
+                    self.mouse_coords[0] - SQUARE_SIZE / 2,
+                    self.mouse_coords[1] - SQUARE_SIZE / 2,
+                ),
+            )
 
     def load_board_from_FEN(self, fen_string: str) -> None:
         # load board content from a FEN string
@@ -214,6 +308,16 @@ class Board:
                         Piece(x.upper(), "b" if x.islower() else "w")
                     )
             cur_board_line += 1
+
+    def mouse_to_grid(self) -> tuple[int, int]:
+        if not (
+            (BORDER_SIZE < self.mouse_coords[0] < BORDER_SIZE + BOARD_SIZE)
+            and (BORDER_SIZE < self.mouse_coords[1] < BORDER_SIZE + BOARD_SIZE)
+        ):
+            return NULL_COORDS
+        return (self.mouse_coords[1] - BORDER_SIZE) // SQUARE_SIZE, (
+            self.mouse_coords[0] - BORDER_SIZE
+        ) // SQUARE_SIZE
 
     @staticmethod
     def center_text(
