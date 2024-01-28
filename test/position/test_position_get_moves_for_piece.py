@@ -13,7 +13,7 @@ from position import Position
 @pytest.fixture
 def test_board() -> Board:
     # empty board used by tests
-    return Board(True, "WOOD")
+    return Board("WOOD")
 
 
 @pytest.fixture

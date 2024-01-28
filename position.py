@@ -7,8 +7,6 @@ Object used to analyse a position during a game
 
 import copy
 
-from loguru import logger
-
 from piece import Piece
 
 CASTLE_MOVES = {
@@ -22,20 +20,19 @@ class Position:
         self.board = board
         self.flags = flags
         self.valid_moves = self.get_valid_moves()
-        self.map_move: dict[tuple[int, int], list[tuple[int, int]]] = {}
-        self.map_move_to_board()
-        logger.info(self.map_move)
+        self.move_map: dict[tuple[int, int], list[tuple[int, int]]] = {}
+        self.fill_move_map()
 
-    def map_move_to_board(self) -> None:
+    def fill_move_map(self) -> None:
         for move in self.valid_moves:
             if not move.startswith("0"):
                 move = move.replace("x", "")
                 move_from = Position._square_coords_to_xy_coords(move[-4:-2])
                 move_to = Position._square_coords_to_xy_coords(move[-2:])
-                if move_from in self.map_move:
-                    self.map_move[move_from].append(move_to)
+                if move_from in self.move_map:
+                    self.move_map[move_from].append(move_to)
                 else:
-                    self.map_move[move_from] = [move_to]
+                    self.move_map[move_from] = [move_to]
 
     def get_valid_moves(self) -> list[str]:
         # public method used by Game object

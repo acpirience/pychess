@@ -23,6 +23,11 @@ class Chess:
         self.init_screen()
         self.game = Game()
 
+        # Mouse
+        pygame.mouse.set_visible(True)
+        self.mouse_coords = (0, 0)
+        self.mouse_clicked = {"BUTTONUP": False, "BUTTONDOWN": False}
+
     def game_loop(self) -> None:
         while self.running:
             self.get_events()
@@ -54,8 +59,18 @@ class Chess:
             if event.type == pygame.QUIT:
                 self.running = False
 
+            if event.type == pygame.MOUSEMOTION:
+                self.mouse_coords = pygame.mouse.get_pos()
+
+            if event.type == pygame.MOUSEBUTTONUP:
+                self.mouse_clicked["BUTTONUP"] = True
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                self.mouse_clicked["BUTTONDOWN"] = True
+
     def update(self) -> None:
-        pass
+        self.game.board.mouse_coords = self.mouse_coords
+        self.game.board.mouse_clicked = self.mouse_clicked
 
     def render(self) -> None:
         self.game_canvas.fill(pygame.Color("Dark Green"))

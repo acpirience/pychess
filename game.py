@@ -7,14 +7,13 @@ Chess game
 import os
 
 import pygame
-from loguru import logger
 
 from board import BORDER_SIZE, SQUARE_SIZE, Board
 from config import FONT_DIR
 from position import Position
 
 FEN_INITIAL_BOARD = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
-# FEN_INITIAL_BOARD = "8/8/8/2n1n3/3K4/3P4/8/8"
+FEN_INITIAL_BOARD = "rnbqkbnr/ppp2ppp/8/3pp3/P3P3/8/1PPP1PPP/RNBQKBNR"
 
 BOARD_SIZE = (SQUARE_SIZE * 8) + (BORDER_SIZE * 2)
 
@@ -35,7 +34,7 @@ class Game:
         self.turn = 1
 
         # Board
-        self.board = Board(True, "WOOD")
+        self.board = Board("WOOD")
         self.board.load_board_from_FEN(FEN_INITIAL_BOARD)
 
         # assets
@@ -43,8 +42,7 @@ class Game:
 
         # start
         self.position = Position(self.board.board_content, self.flags)
-        self.possible_moves = self.position.get_valid_moves()
-        logger.info(self.possible_moves)
+        self.board.move_map = self.position.move_map
 
     def _load_assets(self) -> None:
         # load assets used by the object

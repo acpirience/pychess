@@ -18,20 +18,26 @@ COLOR_SCHEME_LIST = {
     "GREEN": ["#F0D1A1", "#537C49", "#234C19"],
 }
 
+COLOR_VALID_MOVE = "#26852A"
+
 SQUARE_SIZE = 100
 BORDER_SIZE = 25
+BOARD_SIZE = 8 * SQUARE_SIZE
 
 
 class Board:
     def __init__(
         self,
-        white_is_south: bool = True,
         color_scheme: str = "BLACK",
     ) -> None:
-        self.white_is_south = white_is_south
         self.color_scheme = color_scheme
         self.board_content: list[list[Piece]] = [[] for _ in range(8)]
         self.asset_loaded = False
+
+        # Mouse
+        self.mouse_coords: tuple[int, int] = (0, 0)
+        self.mouse_clicked: dict[str, bool]
+        self.move_map: dict[tuple[int, int], list[tuple[int, int]]] = {}
 
     def _load_assets(self) -> None:
         # load assets used by the object
@@ -65,6 +71,7 @@ class Board:
         self._render_board(game_canvas)
         self._render_marks(game_canvas)
         self._render_pieces(game_canvas)
+        self._render_mouse_over(game_canvas)
 
     def _render_board(self, game_canvas: pygame.Surface) -> None:
         for x in range(8):
@@ -89,9 +96,6 @@ class Board:
         # render board marks (coordinates of squares) on screen
         numbers = [str(x + 1) for x in reversed(range(8))]
         letters = [chr(x + 65) for x in range(8)]
-        if not self.white_is_south:
-            numbers.reverse()
-            letters.reverse()
 
         for pos, letter in enumerate(letters):
             text, text_rect = Board.center_text(
@@ -129,15 +133,59 @@ class Board:
             )
             game_canvas.blit(pygame.transform.rotate(text, 180), text_rect)
 
+    def _render_mouse_over(self, game_canvas: pygame.Surface) -> None:
+        if (BORDER_SIZE < self.mouse_coords[0] < BORDER_SIZE + BOARD_SIZE) and (
+            BORDER_SIZE < self.mouse_coords[1] < BORDER_SIZE + BOARD_SIZE
+        ):
+            line = (self.mouse_coords[1] - BORDER_SIZE) // SQUARE_SIZE
+            col = (self.mouse_coords[0] - BORDER_SIZE) // SQUARE_SIZE
+            square = pygame.Rect(
+                (
+                    BORDER_SIZE + (col % 8) * SQUARE_SIZE,
+                    BORDER_SIZE + (line % 8) * SQUARE_SIZE,
+                ),
+                (SQUARE_SIZE, SQUARE_SIZE),
+            )
+            pygame.draw.rect(game_canvas, pygame.Color("white"), square, 5, 5)
+
+            if (line, col) in self.move_map:
+                for target_line, target_col in self.move_map[(line, col)]:
+                    center_start = (
+                        BORDER_SIZE
+                        + SQUARE_SIZE / 2
+                        + col * SQUARE_SIZE
+                        + BORDER_SIZE * Board.sign(target_col - col),
+                        BORDER_SIZE
+                        + SQUARE_SIZE / 2
+                        + line * SQUARE_SIZE
+                        + BORDER_SIZE * Board.sign(target_line - line),
+                    )
+                    center_end = (
+                        BORDER_SIZE + SQUARE_SIZE / 2 + target_col * SQUARE_SIZE,
+                        BORDER_SIZE + SQUARE_SIZE / 2 + target_line * SQUARE_SIZE,
+                    )
+                    self._render_line(game_canvas, center_start, center_end)
+
+                for target_line, target_col in self.move_map[(line, col)]:
+                    center_end = (
+                        BORDER_SIZE + SQUARE_SIZE / 2 + target_col * SQUARE_SIZE,
+                        BORDER_SIZE + SQUARE_SIZE / 2 + target_line * SQUARE_SIZE,
+                    )
+                    self._render_move(game_canvas, center_end)
+
+    def _render_line(
+        self, game_canvas: pygame.Surface, start: tuple[float, float], end: tuple[float, float]
+    ) -> None:
+        pygame.draw.line(game_canvas, pygame.Color("Black"), start, end, 1)
+
+    def _render_move(self, game_canvas: pygame.Surface, end: tuple[float, float]) -> None:
+        pygame.draw.circle(game_canvas, pygame.Color("Black"), end, 10)
+        pygame.draw.circle(game_canvas, pygame.Color(COLOR_VALID_MOVE), end, 8)
+
     def _render_pieces(self, game_canvas: pygame.Surface) -> None:
         # render chess pieces on screen
-        if self.white_is_south:
-            board = self.board_content
-        else:
-            board = [self.board_content[x][::-1] for x in reversed(range(8))]
-
         cur_line = 0
-        for line in board:
+        for line in self.board_content:
             cur_col = 0
             while cur_col < 8:
                 if line[cur_col]:
@@ -179,3 +227,7 @@ class Board:
         text = font.render(msg, True, color)
         text_rect = text.get_rect(center=(pos_x, pos_y))
         return text, text_rect
+
+    @staticmethod
+    def sign(x: int) -> int:
+        return (x > 0) - (x < 0)
