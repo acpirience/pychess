@@ -31,35 +31,35 @@ def test_king_in_check_with_pawn(test_board: Board, test_flags: dict[str, str | 
     test_board.load_board_from_FEN("8/8/8/8/8/8/5p2/RNBQKBNR")
 
     test_position = Position(test_board.board_content, test_flags)
-    assert test_position.king_is_in_check(test_board.board_content, str(test_flags["color"]))
+    assert test_position.king_is_in_check(test_board.board_content)
 
 
 def test_king_in_check_with_rook(test_board: Board, test_flags: dict[str, str | bool]) -> None:
     test_board.load_board_from_FEN("4r3/8/8/8/8/8/8/RNBQKBNR")
 
     test_position = Position(test_board.board_content, test_flags)
-    assert test_position.king_is_in_check(test_board.board_content, str(test_flags["color"]))
+    assert test_position.king_is_in_check(test_board.board_content)
 
 
 def test_king_in_check_with_knight(test_board: Board, test_flags: dict[str, str | bool]) -> None:
     test_board.load_board_from_FEN("8/8/8/8/8/8/6n1/RNBQKBNR")
 
     test_position = Position(test_board.board_content, test_flags)
-    assert test_position.king_is_in_check(test_board.board_content, str(test_flags["color"]))
+    assert test_position.king_is_in_check(test_board.board_content)
 
 
 def test_king_in_check_with_bishop(test_board: Board, test_flags: dict[str, str | bool]) -> None:
     test_board.load_board_from_FEN("8/8/8/b7/8/8/8/RNBQKBNR")
 
     test_position = Position(test_board.board_content, test_flags)
-    assert test_position.king_is_in_check(test_board.board_content, str(test_flags["color"]))
+    assert test_position.king_is_in_check(test_board.board_content)
 
 
 def test_king_in_check_with_queen(test_board: Board, test_flags: dict[str, str | bool]) -> None:
     test_board.load_board_from_FEN("8/8/8/4q3/8/8/8/RNBQKBNR")
 
     test_position = Position(test_board.board_content, test_flags)
-    assert test_position.king_is_in_check(test_board.board_content, str(test_flags["color"]))
+    assert test_position.king_is_in_check(test_board.board_content)
 
 
 def test_black_king_in_check_by_knight(
@@ -69,7 +69,7 @@ def test_black_king_in_check_by_knight(
     test_flags["color"] = "b"
 
     test_position = Position(test_board.board_content, test_flags)
-    assert test_position.king_is_in_check(test_board.board_content, str(test_flags["color"]))
+    assert test_position.king_is_in_check(test_board.board_content)
 
 
 def test_black_king_in_check_by_rook(test_board: Board, test_flags: dict[str, str | bool]) -> None:
@@ -77,7 +77,7 @@ def test_black_king_in_check_by_rook(test_board: Board, test_flags: dict[str, st
     test_flags["color"] = "b"
 
     test_position = Position(test_board.board_content, test_flags)
-    assert test_position.king_is_in_check(test_board.board_content, str(test_flags["color"]))
+    assert test_position.king_is_in_check(test_board.board_content)
 
 
 def test_no_chess_if_no_king(test_board: Board, test_flags: dict[str, str | bool]) -> None:
@@ -85,4 +85,4 @@ def test_no_chess_if_no_king(test_board: Board, test_flags: dict[str, str | bool
     test_board.load_board_from_FEN("8/8/8/8/8/8/8/8")
 
     test_position = Position(test_board.board_content, test_flags)
-    assert not test_position.king_is_in_check(test_board.board_content, str(test_flags["color"]))
+    assert not test_position.king_is_in_check(test_board.board_content)
