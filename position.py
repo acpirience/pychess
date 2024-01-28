@@ -353,10 +353,6 @@ class Position:
         board[line_start][col_start] = Piece()
 
     @staticmethod
-    def _invert_coords(coords: str) -> str:
-        return f"{coords[0]}{9 - int(str(coords[1]))}"
-
-    @staticmethod
     def _invert_color(color: str) -> str:
         if color == "w":
             return "b"
