@@ -25,6 +25,7 @@ BORDER_SIZE = 25
 BOARD_SIZE = 8 * SQUARE_SIZE
 
 NULL_COORDS = (99, 99)
+DEBUG = True
 
 
 class Board:
@@ -42,6 +43,7 @@ class Board:
         self.drag = False
         self.drag_from: tuple[int, int] = NULL_COORDS  # forbidden value to keep mypy happy
         self.drag_piece = Piece()
+        self.move_done = False
 
         self.move_map: dict[tuple[int, int], list[tuple[int, int]]] = {}
 
@@ -63,6 +65,7 @@ class Board:
             self.piece_list[piece] = pygame.image.load(os.path.join(IMG_DIR, f"{piece}.png"))
 
     def update(self) -> None:
+        # Shall we drag ?
         if self.mouse_clicked["BUTTONDOWN"] and not self.drag:
             coords = self.mouse_to_grid()
             if coords and coords in self.move_map:
@@ -72,6 +75,19 @@ class Board:
                     self.drag_from = coords
             else:
                 self.mouse_clicked["BUTTONDOWN"] = False
+
+        # Shall we drop ?
+        if not self.mouse_clicked["BUTTONDOWN"] and self.drag:
+            coords = self.mouse_to_grid()
+            if coords and coords in self.move_map[self.drag_from]:
+                # valid move => drop
+                self.do_move(coords)
+                pass
+            else:
+                # invalid move => un drag
+                self.drag_piece = Piece()
+                self.drag = False
+                self.drag_from = NULL_COORDS
 
     def render(self, game_canvas: pygame.Surface) -> None:
         # render board on screen
@@ -86,7 +102,8 @@ class Board:
         self._render_marks(game_canvas)
         self._render_pieces(game_canvas)
         self._render_mouse_over(game_canvas)
-        self._render_debug(game_canvas)
+        if DEBUG:
+            self._render_debug(game_canvas)
 
     def _render_debug(self, game_canvas: pygame.Surface) -> None:
         coords = self.mouse_to_grid()
@@ -318,6 +335,10 @@ class Board:
         return (self.mouse_coords[1] - BORDER_SIZE) // SQUARE_SIZE, (
             self.mouse_coords[0] - BORDER_SIZE
         ) // SQUARE_SIZE
+
+    def do_move(self, coords: tuple[int, int]) -> None:
+        # Do the move on Board and update self.move_done for game Object to notice
+        pass
 
     @staticmethod
     def center_text(

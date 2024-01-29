@@ -63,7 +63,7 @@ class Chess:
                 self.mouse_coords = pygame.mouse.get_pos()
 
             if event.type == pygame.MOUSEBUTTONUP:
-                self.mouse_clicked["BUTTONDOwN"] = False
+                self.mouse_clicked["BUTTONDOWN"] = False
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 self.mouse_clicked["BUTTONDOWN"] = True
