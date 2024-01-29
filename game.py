@@ -7,18 +7,21 @@ Chess game
 import os
 
 import pygame
+from loguru import logger
 
 from board import BORDER_SIZE, SQUARE_SIZE, Board
 from config import FONT_DIR
 from position import Position
 
 FEN_INITIAL_BOARD = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+FEN_INITIAL_BOARD = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQK2R"
 
 BOARD_SIZE = (SQUARE_SIZE * 8) + (BORDER_SIZE * 2)
 
 
 class Game:
     def __init__(self) -> None:
+        logger.info("Starting Game")
         self.move_list: list[list[str]] = [[]]
         self.FEN_list: list[str] = []
         # dict containing information on the game such as
@@ -42,6 +45,8 @@ class Game:
         # start
         self.position = Position(self.board.board_content, self.flags)
         self.board.move_map = self.position.move_map
+
+        logger.info(self.board.move_map)
 
     def _load_assets(self) -> None:
         # load assets used by the object

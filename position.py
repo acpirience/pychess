@@ -29,10 +29,17 @@ class Position:
                 move = move.replace("x", "")
                 move_from = Position._square_coords_to_xy_coords(move[-4:-2])
                 move_to = Position._square_coords_to_xy_coords(move[-2:])
-                if move_from in self.move_map:
-                    self.move_map[move_from].append(move_to)
-                else:
-                    self.move_map[move_from] = [move_to]
+            else:
+                move_from = Position._square_coords_to_xy_coords(
+                    CASTLE_MOVES[move][str(self.flags["color"])][0][-4:-2]
+                )
+                move_to = Position._square_coords_to_xy_coords(
+                    CASTLE_MOVES[move][str(self.flags["color"])][0][-2:]
+                )
+            if move_from in self.move_map:
+                self.move_map[move_from].append(move_to)
+            else:
+                self.move_map[move_from] = [move_to]
 
     def get_valid_moves(self) -> list[str]:
         # public method used by Game object

@@ -81,7 +81,7 @@ class Board:
             coords = self.mouse_to_grid()
             if coords and coords in self.move_map[self.drag_from]:
                 # valid move => drop
-                self.do_move(coords)
+                self.do_move(self.drag_from, coords)
                 pass
             else:
                 # invalid move => un drag
@@ -336,7 +336,7 @@ class Board:
             self.mouse_coords[0] - BORDER_SIZE
         ) // SQUARE_SIZE
 
-    def do_move(self, coords: tuple[int, int]) -> None:
+    def do_move(self, coords_from: tuple[int, int], coords_to: tuple[int, int]) -> None:
         # Do the move on Board and update self.move_done for game Object to notice
         pass
 
