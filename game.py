@@ -10,6 +10,7 @@ import pygame
 from loguru import logger
 
 from board import BORDER_SIZE, SQUARE_SIZE, Board
+from piece import Piece
 from config import FONT_DIR
 from position import Position
 
@@ -57,6 +58,10 @@ class Game:
 
     def update(self) -> None:
         self.board.update()
+        if self.board.move_done:
+            # move done
+            logger.info(self.board.move_played)
+            exit()
 
     def render(self, game_canvas: pygame.Surface) -> None:
         # render Board and game informations on screen

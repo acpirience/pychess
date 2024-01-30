@@ -20,7 +20,7 @@ class Position:
         self.board = board
         self.flags = flags
         self.valid_moves = self.get_valid_moves()
-        self.move_map: dict[tuple[int, int], list[tuple[int, int]]] = {}
+        self.move_map: dict[tuple[int, int], list[tuple[tuple[int, int], str]]] = {}
         self.fill_move_map()
 
     def fill_move_map(self) -> None:
@@ -37,9 +37,9 @@ class Position:
                     CASTLE_MOVES[move][str(self.flags["color"])][0][-2:]
                 )
             if move_from in self.move_map:
-                self.move_map[move_from].append(move_to)
+                self.move_map[move_from].append((move_to, move))
             else:
-                self.move_map[move_from] = [move_to]
+                self.move_map[move_from] = [(move_to, move)]
 
     def get_valid_moves(self) -> list[str]:
         # public method used by Game object

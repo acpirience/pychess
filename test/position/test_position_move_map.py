@@ -36,12 +36,12 @@ def test_move_map_start(test_board: Board, test_flags: dict[str, str | bool]) ->
     # pawns
     assert (6, 0) in move_map
     assert (6, 1) in move_map
-    assert move_map[(6, 2)] == [(5, 2), (4, 2)]
+    assert move_map[(6, 2)] == [((5, 2), "c2c3"), ((4, 2), "c2c4")]
 
     # Knights
     assert (7, 1) in move_map
     assert (7, 6) in move_map
-    assert move_map[(7, 1)] == [(5, 2), (5, 0)]
+    assert move_map[(7, 1)] == [((5, 2), "Nb1c3"), ((5, 0), "Nb1a3")]
 
     # king
     assert (7, 4) not in move_map
@@ -55,4 +55,4 @@ def test_move_map_castle(test_board: Board, test_flags: dict[str, str | bool]) -
 
     # king
     assert (7, 4) in move_map
-    assert move_map[(7, 4)] == [(7, 5), (7, 6)]
+    assert move_map[(7, 4)] == [((7, 5), "Ke1f1"), ((7, 6), "0-0")]

@@ -8,6 +8,7 @@ import glob
 import os
 
 import pygame
+from loguru import logger
 
 from config import FONT_DIR, IMG_DIR
 from piece import Piece
@@ -44,8 +45,9 @@ class Board:
         self.drag_from: tuple[int, int] = NULL_COORDS  # forbidden value to keep mypy happy
         self.drag_piece = Piece()
         self.move_done = False
+        self.move_played: tuple[tuple[int, int], tuple[int, int], str]
 
-        self.move_map: dict[tuple[int, int], list[tuple[int, int]]] = {}
+        self.move_map: dict[tuple[int, int], list[tuple[tuple[int, int], str]]] = {}
 
     def _load_assets(self) -> None:
         # load assets used by the object
@@ -65,6 +67,10 @@ class Board:
             self.piece_list[piece] = pygame.image.load(os.path.join(IMG_DIR, f"{piece}.png"))
 
     def update(self) -> None:
+        # do Nothing if move already done
+        if self.move_done:
+            return
+
         # Shall we drag ?
         if self.mouse_clicked["BUTTONDOWN"] and not self.drag:
             coords = self.mouse_to_grid()
@@ -79,15 +85,17 @@ class Board:
         # Shall we drop ?
         if not self.mouse_clicked["BUTTONDOWN"] and self.drag:
             coords = self.mouse_to_grid()
-            if coords and coords in self.move_map[self.drag_from]:
-                # valid move => drop
-                self.do_move(self.drag_from, coords)
-                pass
-            else:
-                # invalid move => un drag
-                self.drag_piece = Piece()
-                self.drag = False
-                self.drag_from = NULL_COORDS
+            if coords:
+                move_list = [x[0] for x in self.move_map[self.drag_from]]
+                if coords in move_list:
+                    # valid move => drop
+                    chess_move = [x[1] for x in self.move_map[self.drag_from] if x[0] == coords]
+                    self.do_move(self.drag_from, coords, chess_move[0])
+
+            # undrag
+            self.drag_piece = Piece()
+            self.drag = False
+            self.drag_from = NULL_COORDS
 
     def render(self, game_canvas: pygame.Surface) -> None:
         # render board on screen
@@ -202,7 +210,7 @@ class Board:
             line, col = coords
             # lines and targets except dragged piece
             if (line, col) in self.move_map and not self.drag:
-                for target_line, target_col in self.move_map[(line, col)]:
+                for (target_line, target_col), _ in self.move_map[(line, col)]:
                     center_start = (
                         BORDER_SIZE
                         + SQUARE_SIZE / 2
@@ -219,7 +227,7 @@ class Board:
                     )
                     self._render_line(game_canvas, center_start, center_end)
 
-                for target_line, target_col in self.move_map[(line, col)]:
+                for (target_line, target_col), _ in self.move_map[(line, col)]:
                     center_end = (
                         BORDER_SIZE + SQUARE_SIZE / 2 + target_col * SQUARE_SIZE,
                         BORDER_SIZE + SQUARE_SIZE / 2 + target_line * SQUARE_SIZE,
@@ -229,7 +237,7 @@ class Board:
             # lines and targets for dragged piece
             if self.drag:
                 line, col = self.drag_from
-                for target_line, target_col in self.move_map[line, col]:
+                for (target_line, target_col), _ in self.move_map[line, col]:
                     center_start = (
                         BORDER_SIZE
                         + SQUARE_SIZE / 2
@@ -246,7 +254,7 @@ class Board:
                     )
                     self._render_line(game_canvas, center_start, center_end)
 
-                for target_line, target_col in self.move_map[(line, col)]:
+                for (target_line, target_col), _ in self.move_map[(line, col)]:
                     center_end = (
                         BORDER_SIZE + SQUARE_SIZE / 2 + target_col * SQUARE_SIZE,
                         BORDER_SIZE + SQUARE_SIZE / 2 + target_line * SQUARE_SIZE,
@@ -258,7 +266,7 @@ class Board:
             highlight_color = pygame.Color("White")
             if (
                 self.drag
-                and coords not in self.move_map[self.drag_from]
+                and coords not in self.move_map[self.drag_from][0]
                 and coords != self.drag_from
             ):
                 highlight_color = pygame.Color("Red")
@@ -336,9 +344,13 @@ class Board:
             self.mouse_coords[0] - BORDER_SIZE
         ) // SQUARE_SIZE
 
-    def do_move(self, coords_from: tuple[int, int], coords_to: tuple[int, int]) -> None:
+    def do_move(
+        self, coords_from: tuple[int, int], coords_to: tuple[int, int], chess_move: str
+    ) -> None:
         # Do the move on Board and update self.move_done for game Object to notice
-        pass
+        self.move_played = (coords_from, coords_to, chess_move)
+        logger.info(f"Move played : {self.move_played}")
+        self.move_done = True
 
     @staticmethod
     def center_text(
