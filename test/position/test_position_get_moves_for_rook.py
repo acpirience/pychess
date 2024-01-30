@@ -32,9 +32,10 @@ def test_rook_move(test_board: Board, test_flags: dict[str, str | bool]) -> None
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
+    chess_moves = [x.chess_move for x in possible_moves]
+    chess_moves.sort()
 
-    possible_moves.sort()
-    assert possible_moves == [
+    assert chess_moves == [
         "Ra1a2",
         "Ra1a3",
         "Ra1a4",
@@ -58,9 +59,10 @@ def test_black_rook_move(test_board: Board, test_flags: dict[str, str | bool]) -
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
+    chess_moves = [x.chess_move for x in possible_moves]
+    chess_moves.sort()
 
-    possible_moves.sort()
-    assert possible_moves == [
+    assert chess_moves == [
         "Rd5a5",
         "Rd5b5",
         "Rd5c5",
@@ -83,10 +85,10 @@ def test_rook_capture(test_board: Board, test_flags: dict[str, str | bool]) -> N
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
+    chess_moves = [x.chess_move for x in possible_moves]
+    chess_moves.sort()
 
-    possible_moves.sort()
-
-    assert possible_moves == [
+    assert chess_moves == [
         "Ra1a2",
         "Ra1a3",
         "Ra1a4",
@@ -110,10 +112,10 @@ def test_black_rook_capture(test_board: Board, test_flags: dict[str, str | bool]
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
+    chess_moves = [x.chess_move for x in possible_moves]
+    chess_moves.sort()
 
-    possible_moves.sort()
-
-    assert possible_moves == [
+    assert chess_moves == [
         "Ra8a2",
         "Ra8a3",
         "Ra8a4",

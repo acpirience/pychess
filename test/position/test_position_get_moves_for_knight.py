@@ -32,9 +32,10 @@ def test_knight_move(test_board: Board, test_flags: dict[str, str | bool]) -> No
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
+    chess_moves = [x.chess_move for x in possible_moves]
+    chess_moves.sort()
 
-    possible_moves.sort()
-    assert possible_moves == [
+    assert chess_moves == [
         "Nd4b3",
         "Nd4b5",
         "Nd4c2",
@@ -52,9 +53,10 @@ def test_black_knight_move(test_board: Board, test_flags: dict[str, str | bool])
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
+    chess_moves = [x.chess_move for x in possible_moves]
+    chess_moves.sort()
 
-    possible_moves.sort()
-    assert possible_moves == [
+    assert chess_moves == [
         "Nd4b3",
         "Nd4b5",
         "Nd4c2",
@@ -71,9 +73,10 @@ def test_knight_capture(test_board: Board, test_flags: dict[str, str | bool]) ->
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
+    chess_moves = [x.chess_move for x in possible_moves]
+    chess_moves.sort()
 
-    possible_moves.sort()
-    assert possible_moves == ["Na1xb3", "Na1xc2"]
+    assert chess_moves == ["Na1xb3", "Na1xc2"]
 
 
 def test_knight_blocked(test_board: Board, test_flags: dict[str, str | bool]) -> None:
@@ -81,6 +84,7 @@ def test_knight_blocked(test_board: Board, test_flags: dict[str, str | bool]) ->
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
+    chess_moves = [x.chess_move for x in possible_moves]
+    chess_moves.sort()
 
-    possible_moves.sort()
-    assert possible_moves == []
+    assert chess_moves == []

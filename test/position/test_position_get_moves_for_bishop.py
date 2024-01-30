@@ -32,9 +32,10 @@ def test_bishop_move(test_board: Board, test_flags: dict[str, str | bool]) -> No
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
+    chess_moves = [x.chess_move for x in possible_moves]
+    chess_moves.sort()
 
-    possible_moves.sort()
-    assert possible_moves == [
+    assert chess_moves == [
         "Bd4a1",
         "Bd4a7",
         "Bd4b2",
@@ -57,9 +58,10 @@ def test_black_bishop_move(test_board: Board, test_flags: dict[str, str | bool])
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
+    chess_moves = [x.chess_move for x in possible_moves]
+    chess_moves.sort()
 
-    possible_moves.sort()
-    assert possible_moves == [
+    assert chess_moves == [
         "Bd4a1",
         "Bd4a7",
         "Bd4b2",
@@ -81,9 +83,10 @@ def test_bishop_capture(test_board: Board, test_flags: dict[str, str | bool]) ->
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
+    chess_moves = [x.chess_move for x in possible_moves]
+    chess_moves.sort()
 
-    possible_moves.sort()
-    assert possible_moves == ["Ba1b2", "Ba1xc3"]
+    assert chess_moves == ["Ba1b2", "Ba1xc3"]
 
 
 def test_blocked_blocked(test_board: Board, test_flags: dict[str, str | bool]) -> None:
@@ -91,6 +94,7 @@ def test_blocked_blocked(test_board: Board, test_flags: dict[str, str | bool]) -
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
+    chess_moves = [x.chess_move for x in possible_moves]
+    chess_moves.sort()
 
-    possible_moves.sort()
-    assert possible_moves == []
+    assert chess_moves == []

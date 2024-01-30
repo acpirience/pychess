@@ -33,9 +33,10 @@ def test_king_move(test_board: Board, test_flags: dict[str, str | bool]) -> None
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
+    chess_moves = [x.chess_move for x in possible_moves]
+    chess_moves.sort()
 
-    possible_moves.sort()
-    assert possible_moves == [
+    assert chess_moves == [
         "Kd4c3",
         "Kd4c4",
         "Kd4c5",
@@ -54,9 +55,10 @@ def test_black_king_move(test_board: Board, test_flags: dict[str, str | bool]) -
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
+    chess_moves = [x.chess_move for x in possible_moves]
+    chess_moves.sort()
 
-    possible_moves.sort()
-    assert possible_moves == [
+    assert chess_moves == [
         "Kd4c3",
         "Kd4c4",
         "Kd4c5",
@@ -73,9 +75,10 @@ def test_king_capture(test_board: Board, test_flags: dict[str, str | bool]) -> N
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
+    chess_moves = [x.chess_move for x in possible_moves]
+    chess_moves.sort()
 
-    possible_moves.sort()
-    assert possible_moves == ["Kd4c3", "Kd4c4", "Kd4d5", "Kd4e3", "Kd4e4", "Kd4xc5", "Kd4xe5"]
+    assert chess_moves == ["Kd4c3", "Kd4c4", "Kd4d5", "Kd4e3", "Kd4e4", "Kd4xc5", "Kd4xe5"]
 
 
 def test_king_castle(test_board: Board, test_flags: dict[str, str | bool]) -> None:
@@ -83,9 +86,9 @@ def test_king_castle(test_board: Board, test_flags: dict[str, str | bool]) -> No
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
-
-    assert "0-0" in possible_moves
-    assert "0-0-0" in possible_moves
+    chess_moves = [x.chess_move for x in possible_moves]
+    assert "0-0" in chess_moves
+    assert "0-0-0" in chess_moves
 
 
 def test_king_cannot_castle_because_he_moved(
@@ -96,9 +99,10 @@ def test_king_cannot_castle_because_he_moved(
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
+    chess_moves = [x.chess_move for x in possible_moves]
 
-    assert "0-0" not in possible_moves
-    assert "0-0-0" not in possible_moves
+    assert "0-0" not in chess_moves
+    assert "0-0-0" not in chess_moves
 
 
 def test_king_cannot_castle_other_reasons(
@@ -108,9 +112,10 @@ def test_king_cannot_castle_other_reasons(
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
+    chess_moves = [x.chess_move for x in possible_moves]
 
-    assert "0-0" not in possible_moves
-    assert "0-0-0" not in possible_moves
+    assert "0-0" not in chess_moves
+    assert "0-0-0" not in chess_moves
 
 
 def test_king_cannot_king_castle_path_in_check(
@@ -120,16 +125,18 @@ def test_king_cannot_king_castle_path_in_check(
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
+    chess_moves = [x.chess_move for x in possible_moves]
 
-    assert "0-0" not in possible_moves
-    assert "0-0-0" in possible_moves
+    assert "0-0" not in chess_moves
+    assert "0-0-0" in chess_moves
 
     test_board.load_board_from_FEN("5r2/8/8/8/8/8/PPPPP2P/R3K2R")
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
+    chess_moves = [x.chess_move for x in possible_moves]
 
-    assert "0-0" not in possible_moves
-    assert "0-0-0" in possible_moves
+    assert "0-0" not in chess_moves
+    assert "0-0-0" in chess_moves
 
 
 def test_king_cannot_queen_castle_path_in_check(
@@ -139,9 +146,10 @@ def test_king_cannot_queen_castle_path_in_check(
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
+    chess_moves = [x.chess_move for x in possible_moves]
 
-    assert "0-0" in possible_moves
-    assert "0-0-0" not in possible_moves
+    assert "0-0" in chess_moves
+    assert "0-0-0" not in chess_moves
 
 
 def test_black_king_castle(test_board: Board, test_flags: dict[str, str | bool]) -> None:
@@ -150,9 +158,10 @@ def test_black_king_castle(test_board: Board, test_flags: dict[str, str | bool])
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
+    chess_moves = [x.chess_move for x in possible_moves]
 
-    assert "0-0" in possible_moves
-    assert "0-0-0" in possible_moves
+    assert "0-0" in chess_moves
+    assert "0-0-0" in chess_moves
 
 
 def test_black_king_cannot_castle(test_board: Board, test_flags: dict[str, str | bool]) -> None:
@@ -161,6 +170,7 @@ def test_black_king_cannot_castle(test_board: Board, test_flags: dict[str, str |
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
+    chess_moves = [x.chess_move for x in possible_moves]
 
-    assert "0-0" not in possible_moves
-    assert "0-0-0" in possible_moves
+    assert "0-0" not in chess_moves
+    assert "0-0-0" in chess_moves

@@ -11,6 +11,7 @@ import pygame
 from loguru import logger
 
 from config import FONT_DIR, IMG_DIR
+from move import Move
 from piece import Piece
 
 COLOR_SCHEME_LIST = {
@@ -45,9 +46,9 @@ class Board:
         self.drag_from: tuple[int, int] = NULL_COORDS  # forbidden value to keep mypy happy
         self.drag_piece = Piece()
         self.move_done = False
-        self.move_played: tuple[tuple[int, int], tuple[int, int], str]
+        self.move_played: Move
 
-        self.move_map: dict[tuple[int, int], list[tuple[tuple[int, int], str]]] = {}
+        self.move_map: dict[tuple[int, int], list[Move]] = {}
 
     def _load_assets(self) -> None:
         # load assets used by the object
@@ -86,11 +87,12 @@ class Board:
         if not self.mouse_clicked["BUTTONDOWN"] and self.drag:
             coords = self.mouse_to_grid()
             if coords:
-                move_list = [x[0] for x in self.move_map[self.drag_from]]
-                if coords in move_list:
-                    # valid move => drop
-                    chess_move = [x[1] for x in self.move_map[self.drag_from] if x[0] == coords]
-                    self.do_move(self.drag_from, coords, chess_move[0])
+                for move in self.move_map[self.drag_from]:
+                    if coords == move.square_to:
+                        # valid move => drop
+                        self.move_played = move
+                        self.move_done = True
+                        logger.info(f"Move played : {self.move_played}")
 
             # undrag
             self.drag_piece = Piece()
@@ -210,7 +212,8 @@ class Board:
             line, col = coords
             # lines and targets except dragged piece
             if (line, col) in self.move_map and not self.drag:
-                for (target_line, target_col), _ in self.move_map[(line, col)]:
+                for move in self.move_map[(line, col)]:
+                    target_line, target_col = move.square_to
                     center_start = (
                         BORDER_SIZE
                         + SQUARE_SIZE / 2
@@ -227,7 +230,8 @@ class Board:
                     )
                     self._render_line(game_canvas, center_start, center_end)
 
-                for (target_line, target_col), _ in self.move_map[(line, col)]:
+                for move in self.move_map[(line, col)]:
+                    target_line, target_col = move.square_to
                     center_end = (
                         BORDER_SIZE + SQUARE_SIZE / 2 + target_col * SQUARE_SIZE,
                         BORDER_SIZE + SQUARE_SIZE / 2 + target_line * SQUARE_SIZE,
@@ -237,7 +241,8 @@ class Board:
             # lines and targets for dragged piece
             if self.drag:
                 line, col = self.drag_from
-                for (target_line, target_col), _ in self.move_map[line, col]:
+                for move in self.move_map[line, col]:
+                    target_line, target_col = move.square_to
                     center_start = (
                         BORDER_SIZE
                         + SQUARE_SIZE / 2
@@ -254,7 +259,8 @@ class Board:
                     )
                     self._render_line(game_canvas, center_start, center_end)
 
-                for (target_line, target_col), _ in self.move_map[(line, col)]:
+                for move in self.move_map[(line, col)]:
+                    target_line, target_col = move.square_to
                     center_end = (
                         BORDER_SIZE + SQUARE_SIZE / 2 + target_col * SQUARE_SIZE,
                         BORDER_SIZE + SQUARE_SIZE / 2 + target_line * SQUARE_SIZE,
@@ -266,7 +272,7 @@ class Board:
             highlight_color = pygame.Color("White")
             if (
                 self.drag
-                and coords not in self.move_map[self.drag_from][0]
+                and coords not in [x.square_to for x in self.move_map[self.drag_from]]
                 and coords != self.drag_from
             ):
                 highlight_color = pygame.Color("Red")
@@ -343,14 +349,6 @@ class Board:
         return (self.mouse_coords[1] - BORDER_SIZE) // SQUARE_SIZE, (
             self.mouse_coords[0] - BORDER_SIZE
         ) // SQUARE_SIZE
-
-    def do_move(
-        self, coords_from: tuple[int, int], coords_to: tuple[int, int], chess_move: str
-    ) -> None:
-        # Do the move on Board and update self.move_done for game Object to notice
-        self.move_played = (coords_from, coords_to, chess_move)
-        logger.info(f"Move played : {self.move_played}")
-        self.move_done = True
 
     @staticmethod
     def center_text(

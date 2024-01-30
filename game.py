@@ -10,12 +10,11 @@ import pygame
 from loguru import logger
 
 from board import BORDER_SIZE, SQUARE_SIZE, Board
-from piece import Piece
 from config import FONT_DIR
 from position import Position
 
 FEN_INITIAL_BOARD = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
-FEN_INITIAL_BOARD = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQK2R"
+FEN_INITIAL_BOARD = "rnbqkbnr/pppppppp/8/8/8/1P6/8/RNBQK2R"
 
 BOARD_SIZE = (SQUARE_SIZE * 8) + (BORDER_SIZE * 2)
 
@@ -46,6 +45,8 @@ class Game:
         # start
         self.position = Position(self.board.board_content, self.flags)
         self.board.move_map = self.position.move_map
+
+        # logger.info(self.position.square_is_attacked(self.board.board_content, ()))
 
         logger.info(self.board.move_map)
 

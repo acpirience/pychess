@@ -33,9 +33,10 @@ def test_full_board(test_board: Board, test_flags: dict[str, str | bool]) -> Non
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
+    chess_moves = [x.chess_move for x in possible_moves]
+    chess_moves.sort()
 
-    possible_moves.sort()
-    assert possible_moves == [
+    assert chess_moves == [
         "Nb1a3",
         "Nb1c3",
         "Ng1f3",

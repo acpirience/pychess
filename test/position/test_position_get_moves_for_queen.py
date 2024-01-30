@@ -32,9 +32,10 @@ def test_queen_move(test_board: Board, test_flags: dict[str, str | bool]) -> Non
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
+    chess_moves = [x.chess_move for x in possible_moves]
+    chess_moves.sort()
 
-    possible_moves.sort()
-    assert possible_moves == [
+    assert chess_moves == [
         "Qe4a4",
         "Qe4a8",
         "Qe4b1",
@@ -71,9 +72,10 @@ def test_black_queen_move(test_board: Board, test_flags: dict[str, str | bool]) 
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
+    chess_moves = [x.chess_move for x in possible_moves]
+    chess_moves.sort()
 
-    possible_moves.sort()
-    assert possible_moves == [
+    assert chess_moves == [
         "Qe4a4",
         "Qe4a8",
         "Qe4b1",
@@ -109,9 +111,10 @@ def test_queen_capture(test_board: Board, test_flags: dict[str, str | bool]) -> 
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
+    chess_moves = [x.chess_move for x in possible_moves]
+    chess_moves.sort()
 
-    possible_moves.sort()
-    assert possible_moves == [
+    assert chess_moves == [
         "Qe4b4",
         "Qe4b7",
         "Qe4c2",

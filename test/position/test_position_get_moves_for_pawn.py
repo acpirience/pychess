@@ -32,9 +32,10 @@ def test_move_pawns_alone(test_board: Board, test_flags: dict[str, str | bool]) 
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
+    chess_moves = [x.chess_move for x in possible_moves]
+    chess_moves.sort()
 
-    possible_moves.sort()
-    assert possible_moves == [
+    assert chess_moves == [
         "a2a3",
         "a2a4",
         "b2b3",
@@ -59,9 +60,10 @@ def test_move_pawns_blocked(test_board: Board, test_flags: dict[str, str | bool]
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
+    chess_moves = [x.chess_move for x in possible_moves]
+    chess_moves.sort()
 
-    possible_moves.sort()
-    assert possible_moves == []
+    assert chess_moves == []
 
 
 def test_move_pawns_mixed(test_board: Board, test_flags: dict[str, str | bool]) -> None:
@@ -69,9 +71,10 @@ def test_move_pawns_mixed(test_board: Board, test_flags: dict[str, str | bool]) 
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
+    chess_moves = [x.chess_move for x in possible_moves]
+    chess_moves.sort()
 
-    possible_moves.sort()
-    assert possible_moves == ["c2c3", "e2e3", "e2e4", "g3g4"]
+    assert chess_moves == ["c2c3", "e2e3", "e2e4", "g3g4"]
 
 
 def test_move_pawns_take(test_board: Board, test_flags: dict[str, str | bool]) -> None:
@@ -79,9 +82,10 @@ def test_move_pawns_take(test_board: Board, test_flags: dict[str, str | bool]) -
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
+    chess_moves = [x.chess_move for x in possible_moves]
+    chess_moves.sort()
 
-    possible_moves.sort()
-    assert possible_moves == ["e2xd3", "e2xf3"]
+    assert chess_moves == ["e2xd3", "e2xf3"]
 
 
 def test_black_pawns_move_and_take(test_board: Board, test_flags: dict[str, str | bool]) -> None:
@@ -90,9 +94,10 @@ def test_black_pawns_move_and_take(test_board: Board, test_flags: dict[str, str 
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
+    chess_moves = [x.chess_move for x in possible_moves]
+    chess_moves.sort()
 
-    possible_moves.sort()
-    assert possible_moves == ["b7xa6", "b7xc6", "g7g5", "g7g6", "h6h5"]
+    assert chess_moves == ["b7xa6", "b7xc6", "g7g5", "g7g6", "h6h5"]
 
 
 def test_pawns_capture_en_passant(test_board: Board, test_flags: dict[str, str | bool]) -> None:
@@ -101,9 +106,10 @@ def test_pawns_capture_en_passant(test_board: Board, test_flags: dict[str, str |
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
+    chess_moves = [x.chess_move for x in possible_moves]
+    chess_moves.sort()
 
-    possible_moves.sort()
-    assert possible_moves == ["b5b6", "b5xa6"]
+    assert chess_moves == ["b5b6", "b5xa6"]
 
 
 def test_black_pawns_capture_en_passant(
@@ -115,6 +121,7 @@ def test_black_pawns_capture_en_passant(
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
+    chess_moves = [x.chess_move for x in possible_moves]
+    chess_moves.sort()
 
-    possible_moves.sort()
-    assert possible_moves == ["f4f3", "f4xe3"]
+    assert chess_moves == ["f4f3", "f4xe3"]
