@@ -4,15 +4,20 @@ Object used to analyse a position during a game
 
 """
 
-
 import copy
 
 from move import Move
 from piece import Piece
 
 CASTLE_MOVES = {
-    "0-0": {"w": ["e1g1", "h1f1"], "b": ["e8g8", "h8f8"]},
-    "0-0-0": {"w": ["e1c1", "a1d1"], "b": ["e8c8", "a8d8"]},
+    "0-0": {
+        "w": [Move((7, 4), (7, 6), "e1g1"), Move((7, 7), (7, 5), "h1f1")],
+        "b": [Move((0, 4), (0, 6), "e8g8"), Move((0, 7), (0, 5), "h8f8")],
+    },
+    "0-0-0": {
+        "w": [Move((7, 4), (7, 2), "e1c1"), Move((7, 0), (7, 3), "a1d1")],
+        "b": [Move((0, 4), (0, 2), "e8c8"), Move((0, 0), (0, 3), "a8d8")],
+    },
 }
 
 
@@ -373,8 +378,7 @@ class Position:
     ) -> list[list[Piece]]:
         board_after_move = copy.deepcopy(board)
         if not move.chess_move.startswith("0"):
-            # TBD change to get square coords from Move object
-            self.move_piece(move.chess_move.replace("x", ""), board_after_move)
+            self.move_piece(move, board_after_move)
         else:
             # castle
             castle_moves = CASTLE_MOVES[move.chess_move][color]
@@ -383,9 +387,9 @@ class Position:
 
         return board_after_move
 
-    def move_piece(self, move: str, board: list[list[Piece]]) -> None:
-        line_start, col_start = Position._square_coords_to_xy_coords(move[-4:-2])
-        line_end, col_end = Position._square_coords_to_xy_coords(move[-2:])
+    def move_piece(self, move: Move, board: list[list[Piece]]) -> None:
+        line_start, col_start = move.square_from
+        line_end, col_end = move.square_to
         board[line_end][col_end] = board[line_start][col_start]
         board[line_start][col_start] = Piece()
 
