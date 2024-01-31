@@ -11,11 +11,10 @@ from loguru import logger
 
 from board import BORDER_SIZE, SQUARE_SIZE, Board
 from config import FONT_DIR
-from piece import Piece
 from position import Position
 
 FEN_INITIAL_BOARD = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
-FEN_INITIAL_BOARD = "rnbqkbnr/pppppppp/8/8/8/1P6/8/RNBQK2R"
+FEN_INITIAL_BOARD = "rnbqkbnr/pppppppp/8/8/8/1P6/7P/RNBQK2R"
 
 BOARD_SIZE = (SQUARE_SIZE * 8) + (BORDER_SIZE * 2)
 
@@ -81,14 +80,7 @@ class Game:
             # TBD
 
             # Update Board
-            self.board.board_content[self.board.move_played.square_to[0]][
-                self.board.move_played.square_to[1]
-            ] = self.board.board_content[self.board.move_played.square_from[0]][
-                self.board.move_played.square_from[1]
-            ]
-            self.board.board_content[self.board.move_played.square_from[0]][
-                self.board.move_played.square_from[1]
-            ] = Piece()
+            self.board.do_move(self.board.move_played)
 
             # switch Player
             if self.flags["color"] == "w":

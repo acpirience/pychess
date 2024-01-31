@@ -174,7 +174,7 @@ class Position:
                             Move(
                                 (line, col),
                                 (line + PAWN_MOVE_DIRECTION, col + i),
-                                f"{Position._xy_to_chess_coords(line, col)}x{Position._xy_to_chess_coords(line + PAWN_MOVE_DIRECTION, col + i)}",
+                                f"{Position._xy_to_chess_coords(line, col)}x{Position._xy_to_chess_coords(line + PAWN_MOVE_DIRECTION, col + i)} e.p",
                             )
                         )
 

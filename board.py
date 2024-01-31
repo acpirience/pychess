@@ -358,6 +358,19 @@ class Board:
             self.mouse_coords[0] - BORDER_SIZE
         ) // SQUARE_SIZE
 
+    def do_move(self, move: Move) -> None:
+        color = self.board_content[move.square_from[0]][move.square_from[1]].color
+
+        self.board_content[move.square_to[0]][move.square_to[1]] = self.board_content[
+            move.square_from[0]
+        ][move.square_from[1]]
+        self.board_content[move.square_from[0]][move.square_from[1]] = Piece()
+
+        # en passant => capture piece behind pawn moved
+        PAWN_MOVE_DIRECTION = -1 if color == "w" else 1
+        if move.chess_move.endswith(" e.p"):
+            self.board_content[move.square_to[0] - PAWN_MOVE_DIRECTION][move.square_to[1]] = Piece()
+
     @staticmethod
     def center_text(
         # helper function to center text on screen
