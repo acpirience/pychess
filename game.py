@@ -95,6 +95,7 @@ class Game:
         # render Board and game informations on screen
         self.board.render(game_canvas)
         self._render_turn(game_canvas)
+        self._render_moves(game_canvas)
 
     def _render_turn(self, game_canvas: pygame.Surface) -> None:
         # render turn number and who's turn is it on screen
@@ -105,4 +106,18 @@ class Game:
                 pygame.Color("White"),
             ),
             (BOARD_SIZE + BORDER_SIZE, BORDER_SIZE / 2),
+        )
+
+    def _render_moves(self, game_canvas: pygame.Surface) -> None:
+        # render turn number and who's turn is it on screen
+        moves = ""
+        for move in self.move_list:
+            moves += f"{move} "
+        game_canvas.blit(
+            self.font_turn.render(
+                moves,
+                True,
+                pygame.Color("White"),
+            ),
+            (BORDER_SIZE, BOARD_SIZE),
         )
