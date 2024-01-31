@@ -348,6 +348,32 @@ class Board:
                     )
             cur_board_line += 1
 
+    def get_FEN_from_board(self) -> str:
+        # save board content as a FEN string
+        # https://www.chess.com/terms/fen-chess
+        empty_squares = 0
+        fen_string = ""
+
+        for line in range(8):
+            for col in range(8):
+                if self.board_content[line][col]:
+                    if empty_squares != 0:
+                        fen_string += f"{empty_squares}"
+                        empty_squares = 0
+                    if self.board_content[line][col].color == "b":
+                        fen_string += self.board_content[line][col].piece.lower()
+                    else:
+                        fen_string += self.board_content[line][col].piece
+                else:
+                    empty_squares += 1
+
+            if empty_squares != 0:
+                fen_string += f"{empty_squares}"
+                empty_squares = 0
+            fen_string += "/"
+
+        return fen_string.removesuffix("/")
+
     def mouse_to_grid(self) -> tuple[int, int]:
         if not (
             (BORDER_SIZE < self.mouse_coords[0] < BORDER_SIZE + BOARD_SIZE)

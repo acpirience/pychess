@@ -15,6 +15,7 @@ from position import Position
 
 FEN_INITIAL_BOARD = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 
+
 BOARD_SIZE = (SQUARE_SIZE * 8) + (BORDER_SIZE * 2)
 
 
@@ -66,10 +67,7 @@ class Game:
             self.move_list.append(self.board.move_played.chess_move)
 
             # register FEN Board
-            # TBD
-
-            # register FEN Board
-            # TBD
+            self.FEN_list.append(self.board.get_FEN_from_board())
 
             # Update flags
             if self.board.move_played.chess_move.startswith("K"):
