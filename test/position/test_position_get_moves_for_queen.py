@@ -20,7 +20,6 @@ def test_board() -> Board:
 def test_flags() -> dict[str, str | bool]:
     return {
         "color": "w",
-        "in_check": "",
         "wKing can castle": True,
         "bKing can castle": True,
         "previous_move": "",

@@ -27,7 +27,6 @@ class Game:
         # who is to play / is a king in check / have king moved (for castle)
         self.flags: dict[str, str | bool] = {
             "color": "w",
-            "in_check": "",
             "wKing can castle": True,
             "bKing can castle": True,
             "previous_move": "",
@@ -72,8 +71,9 @@ class Game:
             # register FEN Board
             # TBD
 
-            # Update all flags
-            # TBD
+            # Update flags
+            if self.board.move_played.chess_move.startswith("K"):
+                self.flags[f"{self.flags['color']}King can castle"] = False
 
             # Check for Null
             # TBD
