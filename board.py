@@ -366,6 +366,14 @@ class Board:
         ][move.square_from[1]]
         self.board_content[move.square_from[0]][move.square_from[1]] = Piece()
 
+        # castle => Move rook also
+        if move.chess_move == "0-0":
+            self.board_content[move.square_to[0]][5] = self.board_content[move.square_from[0]][7]
+            self.board_content[move.square_from[0]][7] = Piece()
+        if move.chess_move == "0-0-0":
+            self.board_content[move.square_to[0]][3] = self.board_content[move.square_from[0]][0]
+            self.board_content[move.square_from[0]][0] = Piece()
+
         # en passant => capture piece behind pawn moved
         PAWN_MOVE_DIRECTION = -1 if color == "w" else 1
         if move.chess_move.endswith(" e.p"):

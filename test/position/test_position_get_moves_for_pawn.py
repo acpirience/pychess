@@ -109,7 +109,7 @@ def test_pawns_capture_en_passant(test_board: Board, test_flags: dict[str, str |
     chess_moves = [x.chess_move for x in possible_moves]
     chess_moves.sort()
 
-    assert chess_moves == ["b5b6", "b5xa6"]
+    assert chess_moves == ["b5b6", "b5xa6 e.p"]
 
 
 def test_black_pawns_capture_en_passant(
@@ -124,4 +124,4 @@ def test_black_pawns_capture_en_passant(
     chess_moves = [x.chess_move for x in possible_moves]
     chess_moves.sort()
 
-    assert chess_moves == ["f4f3", "f4xe3"]
+    assert chess_moves == ["f4f3", "f4xe3 e.p"]
