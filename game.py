@@ -61,11 +61,7 @@ class Game:
     def update(self) -> None:
         self.board.update()
         if self.board.move_done:
-            # move done => update board and game objects
-
-            # check if opposite king in check
-            # TBD
-
+            # move done => update board and gamre objects
             # register move
             self.flags["previous_move"] = self.board.move_played.chess_move
             self.move_list.append(self.board.move_played.chess_move)
