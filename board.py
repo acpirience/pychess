@@ -42,13 +42,21 @@ class Board:
         # Mouse
         self.mouse_coords: tuple[int, int] = (0, 0)
         self.mouse_clicked: dict[str, bool]
+        self.drag: bool
+        self.drag_from: tuple[int, int]
+        self.drag_piece: Piece
+        self.move_done: bool
+        self.move_played: Move
+        self.move_map: dict[tuple[int, int], list[Move]]
+
+        self.new_turn()
+
+    def new_turn(self) -> None:
         self.drag = False
-        self.drag_from: tuple[int, int] = NULL_COORDS  # forbidden value to keep mypy happy
+        self.drag_from = NULL_COORDS  # forbidden value to keep mypy happy
         self.drag_piece = Piece()
         self.move_done = False
-        self.move_played: Move
-
-        self.move_map: dict[tuple[int, int], list[Move]] = {}
+        self.move_map = {}
 
     def _load_assets(self) -> None:
         # load assets used by the object
