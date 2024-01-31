@@ -412,12 +412,6 @@ class Position:
         return f"{Position._col_to_letter(col)}{Position._line_to_board(line)}"
 
     @staticmethod
-    def _square_coords_to_xy_coords(square: str) -> tuple[int, int]:
-        line = 8 - int(square[-1:])
-        col = ord(square[0]) - 97
-        return line, col
-
-    @staticmethod
     def _get_king_coords(board: list[list[Piece]], color: str) -> str:
         for line in range(8):
             for col in range(8):

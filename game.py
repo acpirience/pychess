@@ -14,7 +14,6 @@ from config import FONT_DIR
 from position import Position
 
 FEN_INITIAL_BOARD = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
-FEN_INITIAL_BOARD = "rnbqkbnr/pppppppp/8/8/8/1P6/7P/RNBQK2R"
 
 BOARD_SIZE = (SQUARE_SIZE * 8) + (BORDER_SIZE * 2)
 
