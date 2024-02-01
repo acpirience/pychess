@@ -49,9 +49,9 @@ class Board:
         self.move_played: Move
         self.move_map: dict[tuple[int, int], list[Move]]
 
-        self.new_turn()
+        self.new_move()
 
-    def new_turn(self) -> None:
+    def new_move(self) -> None:
         self.drag = False
         self.drag_from = NULL_COORDS  # forbidden value to keep mypy happy
         self.drag_piece = Piece()

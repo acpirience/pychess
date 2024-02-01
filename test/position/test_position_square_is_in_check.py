@@ -31,14 +31,32 @@ def test_square_is_attacked(test_board: Board, test_flags: dict[str, str | bool]
 
     test_position = Position(test_board.board_content, test_flags)
     # rook
-    assert test_position.square_is_attacked("a8", str(test_flags["color"]))
-    assert test_position.square_is_attacked("a6", str(test_flags["color"]))
-    assert test_position.square_is_attacked("e1", str(test_flags["color"]))
-    assert test_position.square_is_attacked("h1", str(test_flags["color"]))
+    assert test_position.square_is_attacked(
+        test_board.board_content, "a8", str(test_flags["color"])
+    )
+    assert test_position.square_is_attacked(
+        test_board.board_content, "a6", str(test_flags["color"])
+    )
+    assert test_position.square_is_attacked(
+        test_board.board_content, "e1", str(test_flags["color"])
+    )
+    assert test_position.square_is_attacked(
+        test_board.board_content, "h1", str(test_flags["color"])
+    )
     # pawn
-    assert test_position.square_is_attacked("a6", str(test_flags["color"]))
-    assert test_position.square_is_attacked("c6", str(test_flags["color"]))
+    assert test_position.square_is_attacked(
+        test_board.board_content, "a6", str(test_flags["color"])
+    )
+    assert test_position.square_is_attacked(
+        test_board.board_content, "c6", str(test_flags["color"])
+    )
     # king
-    assert test_position.square_is_attacked("h8", str(test_flags["color"]))
-    assert test_position.square_is_attacked("h7", str(test_flags["color"]))
-    assert test_position.square_is_attacked("h6", str(test_flags["color"]))
+    assert test_position.square_is_attacked(
+        test_board.board_content, "h8", str(test_flags["color"])
+    )
+    assert test_position.square_is_attacked(
+        test_board.board_content, "h7", str(test_flags["color"])
+    )
+    assert test_position.square_is_attacked(
+        test_board.board_content, "h6", str(test_flags["color"])
+    )

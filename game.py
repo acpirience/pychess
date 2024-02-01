@@ -42,12 +42,13 @@ class Game:
         self._load_assets()
 
         # start
-        self.next_turn()
+        self.next_move()
 
-    def next_turn(self) -> None:
-        self.board.new_turn()
+    def next_move(self) -> None:
+        self.board.new_move()
         self.position = Position(self.board.board_content, self.flags)
         self.board.move_map = self.position.move_map
+
         # check for checkmate
         # TBD
 
@@ -61,10 +62,7 @@ class Game:
     def update(self) -> None:
         self.board.update()
         if self.board.move_done:
-            # move done => update board and gamre objects
-            # register move
-            self.flags["previous_move"] = self.board.move_played.chess_move
-            self.move_list.append(self.board.move_played.chess_move)
+            # move done => update board and game objects
 
             # register FEN Board
             self.FEN_list.append(self.board.get_FEN_from_board())
@@ -84,9 +82,20 @@ class Game:
                 self.flags["color"] = "b"
             else:
                 self.flags["color"] = "w"
+
+            # check if opposite king is in check
+            if self.position.king_is_in_check(self.board.board_content):
+                logger.info(f"{self.flags['color']} King is in check")
+                self.board.move_played.chess_move += "+"
+
+            # register move
+            self.flags["previous_move"] = self.board.move_played.chess_move
+            self.move_list.append(self.board.move_played.chess_move)
+
+            if self.flags["color"] == "w":
                 self.turn += 1
 
-            self.next_turn()
+            self.next_move()
 
     def render(self, game_canvas: pygame.Surface) -> None:
         # render Board and game informations on screen

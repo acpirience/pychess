@@ -6,6 +6,8 @@ Object used to analyse a position during a game
 
 import copy
 
+from loguru import logger
+
 from move import Move
 from piece import Piece
 
@@ -44,33 +46,37 @@ class Position:
         coords = Position._get_king_coords(board, str(self.flags["color"]))
         if coords == "ERROR":
             return False
-        return self.square_is_attacked(coords, str(self.flags["color"]))
+        return self.square_is_attacked(board, coords, str(self.flags["color"]))
 
-    def square_is_attacked(self, coords: str, color: str) -> bool:
+    def square_is_attacked(self, board: list[list[Piece]], coords: str, color: str) -> bool:
         # square can be target of attack of color opposite of "color"
         possible_targets = [
-            x.chess_move[-2:] for x in self._get_possible_captures(Position._invert_color(color))
+            x.chess_move[-2:]
+            for x in self._get_possible_captures(board, Position._invert_color(color))
         ]
         return coords in possible_targets
 
     def _get_valid_moves(self) -> list[Move]:
-        possible_moves = self._get_possible_moves(str(self.flags["color"]))
+        possible_moves = self._get_possible_moves(self.board, str(self.flags["color"]))
         valid_moves = [x for x in possible_moves if not self.in_check_after_move(x)]
+        logger.info(f"Valid moves: {[x.chess_move for x in valid_moves]}")
         return valid_moves
 
-    def _get_possible_moves(self, color: str, capture_only: bool = False) -> list[Move]:
+    def _get_possible_moves(
+        self, board: list[list[Piece]], color: str, capture_only: bool = False
+    ) -> list[Move]:
         # private method used internally by Board
         pieces = []
 
         # get all pieces of the current color
         for line in range(8):
             for col in range(8):
-                if self.board[line][col].color == color:
-                    pieces.append((self.board[line][col], line, col))
+                if board[line][col].color == color:
+                    pieces.append((board[line][col], line, col))
 
         moves = []
         for piece, line, col in pieces:
-            moves += self._get_moves_for_piece(piece, line, col, color, capture_only)
+            moves += self._get_moves_for_piece(board, piece, line, col, color, capture_only)
 
         return moves
 
@@ -78,11 +84,12 @@ class Position:
         board_after_move = self.get_board_after_move(move, self.board, str(self.flags["color"]))
         return self.king_is_in_check(board_after_move)
 
-    def _get_possible_captures(self, color: str) -> list[Move]:
-        return self._get_possible_moves(color, capture_only=True)
+    def _get_possible_captures(self, board: list[list[Piece]], color: str) -> list[Move]:
+        return self._get_possible_moves(board, color, capture_only=True)
 
     def _get_moves_for_piece(
         self,
+        board: list[list[Piece]],
         piece: Piece,
         line: int,
         col: int,
@@ -92,28 +99,28 @@ class Position:
         moves: list[Move] = []
         match piece.piece:
             case "P":  # Pawn
-                moves += self._get_moves_for_pawn(line, col, color, capture_only)
+                moves += self._get_moves_for_pawn(board, line, col, color, capture_only)
             case "R":  # Rook
-                moves += self._get_moves_for_rook(line, col, color)
+                moves += self._get_moves_for_rook(board, line, col, color)
             case "N":  # Knight
-                moves += self._get_moves_for_knight(line, col, color)
+                moves += self._get_moves_for_knight(board, line, col, color)
             case "B":  # Bishop
-                moves += self._get_moves_for_bishop(line, col, color)
+                moves += self._get_moves_for_bishop(board, line, col, color)
             case "Q":  # Bishop
-                moves += self._get_moves_for_queen(line, col, color)
+                moves += self._get_moves_for_queen(board, line, col, color)
             case "K":  # King
-                moves += self._get_moves_for_king(line, col, color, capture_only)
+                moves += self._get_moves_for_king(board, line, col, color, capture_only)
 
         return moves
 
     def _get_moves_for_pawn(
-        self, line: int, col: int, color: str, capture_only: bool = False
+        self, board: list[list[Piece]], line: int, col: int, color: str, capture_only: bool = False
     ) -> list[Move]:
         PAWN_MOVE_DIRECTION = -1 if color == "w" else 1
         moves: list[Move] = []
         # move
         if not capture_only:
-            if not self.board[line + PAWN_MOVE_DIRECTION][col]:  # Pawn move 1 square
+            if not board[line + PAWN_MOVE_DIRECTION][col]:  # Pawn move 1 square
                 moves.append(
                     Move(
                         (line, col),
@@ -123,7 +130,7 @@ class Position:
                 )
                 if (line == 6 and color == "w") or (line == 1 and color == "b"):
                     # if first move can move 2 squares
-                    if not self.board[line + PAWN_MOVE_DIRECTION * 2][col]:
+                    if not board[line + PAWN_MOVE_DIRECTION * 2][col]:
                         moves.append(
                             Move(
                                 (line, col),
@@ -134,9 +141,9 @@ class Position:
         # capture
         for i in [-1, 1]:
             if 0 <= col + i <= 7:
-                if self.board[line + PAWN_MOVE_DIRECTION][col + i] and self.board[
-                    line + PAWN_MOVE_DIRECTION
-                ][col + i].color == Position._invert_color(color):
+                if board[line + PAWN_MOVE_DIRECTION][col + i] and board[line + PAWN_MOVE_DIRECTION][
+                    col + i
+                ].color == Position._invert_color(color):
                     moves.append(
                         Move(
                             (line, col),
@@ -144,7 +151,7 @@ class Position:
                             f"{Position._xy_to_chess_coords(line, col)}x{Position._xy_to_chess_coords(line + PAWN_MOVE_DIRECTION, col + i)}",
                         )
                     )
-                if capture_only and not self.board[line + PAWN_MOVE_DIRECTION][col + i]:
+                if capture_only and not board[line + PAWN_MOVE_DIRECTION][col + i]:
                     moves.append(
                         Move(
                             (line, col),
@@ -182,14 +189,16 @@ class Position:
 
         return moves
 
-    def _get_moves_for_rook(self, line: int, col: int, color: str) -> list[Move]:
+    def _get_moves_for_rook(
+        self, board: list[list[Piece]], line: int, col: int, color: str
+    ) -> list[Move]:
         moves: list[Move] = []
         # moves
         for move_type in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
             cur_line, cur_col = line, col
             # traverse all 4 directions
             while (0 <= cur_line + move_type[0] <= 7) and (0 <= cur_col + move_type[1] <= 7):
-                if not self.board[cur_line + move_type[0]][cur_col + move_type[1]]:
+                if not board[cur_line + move_type[0]][cur_col + move_type[1]]:
                     # empty square
                     moves.append(
                         Move(
@@ -199,7 +208,7 @@ class Position:
                         )
                     )
                 else:
-                    if self.board[cur_line + move_type[0]][
+                    if board[cur_line + move_type[0]][
                         cur_col + move_type[1]
                     ].color == Position._invert_color(color):
                         # square contains black piece => capture
@@ -217,12 +226,14 @@ class Position:
 
         return moves
 
-    def _get_moves_for_knight(self, line: int, col: int, color: str) -> list[Move]:
+    def _get_moves_for_knight(
+        self, board: list[list[Piece]], line: int, col: int, color: str
+    ) -> list[Move]:
         moves: list[Move] = []
         # move and capture
         for move_type in [(-2, 1), (-1, 2), (1, 2), (2, 1), (2, -1), (1, -2), (-1, -2), (-2, -1)]:
             if (0 <= line + move_type[0] <= 7) and (0 <= col + move_type[1] <= 7):
-                if not self.board[line + move_type[0]][col + move_type[1]]:
+                if not board[line + move_type[0]][col + move_type[1]]:
                     moves.append(
                         Move(
                             (line, col),
@@ -230,9 +241,9 @@ class Position:
                             f"N{Position._xy_to_chess_coords(line, col)}{Position._xy_to_chess_coords(line + move_type[0], col + move_type[1])}",
                         )
                     )
-                elif self.board[line + move_type[0]][
-                    col + move_type[1]
-                ].color == Position._invert_color(color):
+                elif board[line + move_type[0]][col + move_type[1]].color == Position._invert_color(
+                    color
+                ):
                     moves.append(
                         Move(
                             (line, col),
@@ -243,14 +254,16 @@ class Position:
 
         return moves
 
-    def _get_moves_for_bishop(self, line: int, col: int, color: str) -> list[Move]:
+    def _get_moves_for_bishop(
+        self, board: list[list[Piece]], line: int, col: int, color: str
+    ) -> list[Move]:
         moves: list[Move] = []
         # moves
         for move_type in [(1, 1), (1, -1), (-1, 1), (-1, -1)]:
             cur_line, cur_col = line, col
             # traverse all 4 directions
             while (0 <= cur_line + move_type[0] <= 7) and (0 <= cur_col + move_type[1] <= 7):
-                if not self.board[cur_line + move_type[0]][cur_col + move_type[1]]:
+                if not board[cur_line + move_type[0]][cur_col + move_type[1]]:
                     # empty square
                     moves.append(
                         Move(
@@ -260,7 +273,7 @@ class Position:
                         )
                     )
                 else:
-                    if self.board[cur_line + move_type[0]][
+                    if board[cur_line + move_type[0]][
                         cur_col + move_type[1]
                     ].color == Position._invert_color(color):
                         # square contains opposite color piece => capture
@@ -278,14 +291,16 @@ class Position:
 
         return moves
 
-    def _get_moves_for_queen(self, line: int, col: int, color: str) -> list[Move]:
+    def _get_moves_for_queen(
+        self, board: list[list[Piece]], line: int, col: int, color: str
+    ) -> list[Move]:
         moves: list[Move] = []
         # moves
         for move_type in [(1, 1), (1, -1), (-1, 1), (-1, -1), (1, 0), (-1, 0), (0, 1), (0, -1)]:
             cur_line, cur_col = line, col
             # traverse all 8 directions
             while (0 <= cur_line + move_type[0] <= 7) and (0 <= cur_col + move_type[1] <= 7):
-                if not self.board[cur_line + move_type[0]][cur_col + move_type[1]]:
+                if not board[cur_line + move_type[0]][cur_col + move_type[1]]:
                     # empty square
                     moves.append(
                         Move(
@@ -295,7 +310,7 @@ class Position:
                         )
                     )
                 else:
-                    if self.board[cur_line + move_type[0]][
+                    if board[cur_line + move_type[0]][
                         cur_col + move_type[1]
                     ].color == Position._invert_color(color):
                         # square contains black piece => capture
@@ -314,13 +329,13 @@ class Position:
         return moves
 
     def _get_moves_for_king(
-        self, line: int, col: int, color: str, capture_only: bool = False
+        self, board: list[list[Piece]], line: int, col: int, color: str, capture_only: bool = False
     ) -> list[Move]:
         moves: list[Move] = []
         # move and capture
         for move_type in [(-1, -1), (-1, 0), (-1, 1), (1, -1), (1, 0), (1, 1), (0, -1), (0, 1)]:
             if (0 <= line + move_type[0] <= 7) and (0 <= col + move_type[1] <= 7):
-                if not self.board[line + move_type[0]][col + move_type[1]]:
+                if not board[line + move_type[0]][col + move_type[1]]:
                     moves.append(
                         Move(
                             (line, col),
@@ -328,9 +343,9 @@ class Position:
                             f"K{Position._xy_to_chess_coords(line, col)}{Position._xy_to_chess_coords(line + move_type[0], col + move_type[1])}",
                         )
                     )
-                elif self.board[line + move_type[0]][
-                    col + move_type[1]
-                ].color == Position._invert_color(color):
+                elif board[line + move_type[0]][col + move_type[1]].color == Position._invert_color(
+                    color
+                ):
                     moves.append(
                         Move(
                             (line, col),
@@ -344,29 +359,31 @@ class Position:
 
         if (line == 7 and col == 4 and color == "w") or (line == 0 and col == 4 and color == "b"):
             if (
-                not self.board[line][col + 1]
-                and not self.board[line][col + 2]
-                and self.board[line][col + 3] == Piece("R", color)
+                not board[line][col + 1]
+                and not board[line][col + 2]
+                and board[line][col + 3] == Piece("R", color)
             ):
                 if not self.square_is_attacked(
-                    Position._xy_to_chess_coords(line, col + 1), color
+                    board, Position._xy_to_chess_coords(line, col + 1), color
                 ) and not self.square_is_attacked(
-                    Position._xy_to_chess_coords(line, col + 2), color
+                    board, Position._xy_to_chess_coords(line, col + 2), color
                 ):
                     moves.append(Move((line, col), (line, col + 2), "0-0"))
             if (
-                not self.board[line][col - 1]
-                and not self.board[line][col - 2]
-                and not self.board[line][col - 3]
-                and self.board[line][col - 4] == Piece("R", color)
+                not board[line][col - 1]
+                and not board[line][col - 2]
+                and not board[line][col - 3]
+                and board[line][col - 4] == Piece("R", color)
             ):
                 if (
-                    not self.square_is_attacked(Position._xy_to_chess_coords(line, col - 1), color)
-                    and not self.square_is_attacked(
-                        Position._xy_to_chess_coords(line, col - 2), color
+                    not self.square_is_attacked(
+                        board, Position._xy_to_chess_coords(line, col - 1), color
                     )
                     and not self.square_is_attacked(
-                        Position._xy_to_chess_coords(line, col - 3), color
+                        board, Position._xy_to_chess_coords(line, col - 2), color
+                    )
+                    and not self.square_is_attacked(
+                        board, Position._xy_to_chess_coords(line, col - 3), color
                     )
                 ):
                     moves.append(Move((line, col), (line, col - 2), "0-0-0"))
@@ -418,3 +435,15 @@ class Position:
                 if board[line][col] == Piece("K", color):
                     return Position._xy_to_chess_coords(line, col)
         return "ERROR"  # should never be reached
+
+    @staticmethod
+    def pretty_print_board(board: list[list[Piece]]) -> str:
+        ret = "\n"
+        for line in range(8):
+            for col in range(8):
+                if board[line][col]:
+                    ret += str(board[line][col]) + " "
+                else:
+                    ret += "   "
+            ret += "\n"
+        return ret
