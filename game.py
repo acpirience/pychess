@@ -50,7 +50,9 @@ class Game:
         self.board.move_map = self.position.move_map
 
         # check for checkmate
-        # TBD
+        if not self.board.move_map:
+            self.move_list[len(self.move_list) - 1] += "+"
+            self.FEN_list.append(self.board.get_FEN_from_board())
 
     def _load_assets(self) -> None:
         # load assets used by the object

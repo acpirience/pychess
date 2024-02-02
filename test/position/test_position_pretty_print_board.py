@@ -46,14 +46,13 @@ def test_start_board(test_board: Board, test_flags: dict[str, str | bool]) -> No
     test_board.load_board_from_FEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR")
 
     assert (
-        Position.pretty_print_board(test_board.board_content)
-        == "\n"
-           "Rb Nb Bb Qb Kb Bb Nb Rb \n"
-           "Pb Pb Pb Pb Pb Pb Pb Pb \n"
-           "                        \n"
-           "                        \n"
-           "                        \n"
-           "                        \n"
-           "Pw Pw Pw Pw Pw Pw Pw Pw \n"
-           "Rw Nw Bw Qw Kw Bw Nw Rw \n"
+        Position.pretty_print_board(test_board.board_content) == "\n"
+        "Rb Nb Bb Qb Kb Bb Nb Rb \n"
+        "Pb Pb Pb Pb Pb Pb Pb Pb \n"
+        "                        \n"
+        "                        \n"
+        "                        \n"
+        "                        \n"
+        "Pw Pw Pw Pw Pw Pw Pw Pw \n"
+        "Rw Nw Bw Qw Kw Bw Nw Rw \n"
     )
