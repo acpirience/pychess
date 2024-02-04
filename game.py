@@ -32,6 +32,7 @@ class Game:
             "bKing can castle": True,
             "previous_move": "",
         }
+        self.game_status = "Started"
         self.turn = 1
 
         # Board
@@ -49,10 +50,27 @@ class Game:
         self.position = Position(self.board.board_content, self.flags)
         self.board.move_map = self.position.move_map
 
-        # check for checkmate
+        # check for end of game
+        self.detect_end_of_game()
+
+    def detect_end_of_game(self) -> None:
+        # Detect checkmate and stalemate
         if not self.board.move_map:
-            self.move_list[len(self.move_list) - 1] += "+"
+            if self.move_list[len(self.move_list) - 1].endswith("+"):
+                self.move_list[len(self.move_list) - 1] += "+"
+                self.game_status = "Checkmate !"
+            else:
+                self.game_status = "Stalemate"
             self.FEN_list.append(self.board.get_FEN_from_board())
+
+        # Detect Threefold Repetition
+        # TBD
+
+        # Detect 50-Move Rule
+        # TBD
+
+        # Dead Position
+        # TBD
 
     def _load_assets(self) -> None:
         # load assets used by the object
