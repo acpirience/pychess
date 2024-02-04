@@ -79,6 +79,9 @@ class Game:
         # https://www.dafont.com/fr/coolvetica.font
         self.font_turn = pygame.font.Font(os.path.join(FONT_DIR, "coolvetica rg.otf"), 24)
 
+        # https://www.dafont.com/fr/nk57-monospace.font
+        self.font_move = pygame.font.Font(os.path.join(FONT_DIR, "nk57-monospace-no-bd.otf"), 14)
+
     def update(self) -> None:
         self.board.update()
         if self.board.move_done:
@@ -142,14 +145,16 @@ class Game:
 
     def _render_moves(self, game_canvas: pygame.Surface) -> None:
         # render turn number and who's turn is it on screen
-        moves = ""
-        for move in self.move_list:
-            moves += f"{move} "
-        game_canvas.blit(
-            self.font_turn.render(
-                moves,
-                True,
-                pygame.Color("White"),
-            ),
-            (BORDER_SIZE, BOARD_SIZE),
-        )
+        for cnt, move in enumerate(self.move_list):
+            if cnt % 2 == 0:
+                move = f"{(cnt+2)//2:0>2} {move} "
+            else:
+                move = f"          - {move}"
+            game_canvas.blit(
+                self.font_move.render(
+                    move,
+                    True,
+                    pygame.Color("White"),
+                ),
+                (BOARD_SIZE + BORDER_SIZE, (cnt // 2) * BORDER_SIZE + BORDER_SIZE * 2),
+            )

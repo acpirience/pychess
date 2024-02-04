@@ -13,6 +13,7 @@ from loguru import logger
 from config import FONT_DIR, IMG_DIR
 from move import Move
 from piece import Piece
+from position import Position
 
 COLOR_SCHEME_LIST = {
     "BLACK": ["#D6D7D4", "#211E24", "#000000"],
@@ -64,6 +65,9 @@ class Board:
         # fonts
         # https://www.dafont.com/fr/coolvetica.font
         self.font_board_marks = pygame.font.Font(os.path.join(FONT_DIR, "coolvetica rg.otf"), 16)
+
+        # https://www.dafont.com/fr/nk57-monospace.font
+        self.font_debug = pygame.font.Font(os.path.join(FONT_DIR, "nk57-monospace-no-bd.otf"), 12)
 
         # Images : chess pieces
         # https://commons.wikimedia.org/wiki/Category:SVG_chess_pieces
@@ -130,28 +134,29 @@ class Board:
             debug_string += str(self.board_content[coords[0]][coords[1]])
 
         game_canvas.blit(
-            self.font_board_marks.render(
+            self.font_debug.render(
                 debug_string,
                 True,
                 pygame.Color("White"),
             ),
-            (BOARD_SIZE + BORDER_SIZE * 2, BOARD_SIZE),
+            (BORDER_SIZE / 2, BOARD_SIZE + BORDER_SIZE * 2),
         )
 
-        for line in range(8):
-            board = f"line {line}: "
-            for col in range(8):
-                if self.board_content[line][col]:
-                    board += str(self.board_content[line][col]) + " "
-                else:
-                    board += "   "
+        board = (
+            Position.pretty_print_board(self.board_content)
+            .removeprefix("\n")
+            .removesuffix("\n")
+            .split("\n")
+        )
+
+        for cnt, line in enumerate(board):
             game_canvas.blit(
-                self.font_board_marks.render(
-                    board,
+                self.font_debug.render(
+                    line,
                     True,
                     pygame.Color("White"),
                 ),
-                (BOARD_SIZE + BORDER_SIZE * 2, BORDER_SIZE * 5 + BORDER_SIZE * line),
+                (BOARD_SIZE * 1.35, BOARD_SIZE - BORDER_SIZE * 2 + BORDER_SIZE * cnt),
             )
 
     def _render_board(self, game_canvas: pygame.Surface) -> None:
