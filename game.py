@@ -125,9 +125,15 @@ class Game:
 
     def _render_turn(self, game_canvas: pygame.Surface) -> None:
         # render turn number and who's turn is it on screen
+        render_str = f"TURN {self.turn}, "
+        if self.game_status == "Started":
+            render_str += f"{'White' if self.flags['color'] == 'w' else 'Black'} plays"
+        else:
+            render_str += f"{self.game_status}"
+
         game_canvas.blit(
             self.font_turn.render(
-                f"TURN {self.turn}, {'White' if self.flags['color'] == 'w' else 'Black'} plays",
+                render_str,
                 True,
                 pygame.Color("White"),
             ),
