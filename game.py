@@ -11,6 +11,7 @@ from loguru import logger
 
 from board import BORDER_SIZE, SQUARE_SIZE, Board
 from config import FONT_DIR
+from piece import Piece
 from position import Position
 
 FEN_INITIAL_BOARD = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
@@ -54,6 +55,15 @@ class Game:
         self.detect_end_of_game()
 
     def detect_end_of_game(self) -> None:
+        if self.is_checkmate_stalemate():
+            return
+        if self.is_treefold_repetition():
+            return
+        if self.is_fifty_move_rule():
+            return
+        _ = self.is_dead_position()
+
+    def is_checkmate_stalemate(self) -> bool:
         # Detect checkmate and stalemate
         if not self.board.move_map:
             if self.move_list[len(self.move_list) - 1].endswith("+"):
@@ -64,8 +74,11 @@ class Game:
 
             self.board.board_is_active = False
             self.FEN_list.append(self.board.get_FEN_from_board())
-            return
+            return True
 
+        return False
+
+    def is_treefold_repetition(self) -> bool:
         # Detect draws : https://www.chess.com/terms/draw-chess
         # Detect Threefold Repetition
         fen_string = self.board.get_FEN_from_board()
@@ -77,27 +90,75 @@ class Game:
                 self.game_status = "Draw by Threefold Repetition"
                 self.board.board_is_active = False
                 self.FEN_list.append(fen_string)
-                return
+                return True
 
-        # Dead Position
-        # TBD
+        return False
 
+    def is_fifty_move_rule(self) -> bool:
         # Detect 50-Move Rule
         if len(self.move_list) < 50:
             # at least 50 move
-            return
+            return False
         for move in self.move_list[-50:]:
             # no captures
             if "x" in move:
-                return
+                return False
             # no move by pawn
             if move[0].islower():
-                return
+                return False
 
         self.game_status = "Draw by 50-Move Rule"
         self.board.board_is_active = False
-        self.FEN_list.append(fen_string)
-        return
+        self.FEN_list.append(self.board.get_FEN_from_board())
+        return True
+
+    def is_dead_position(self) -> bool:
+        # Dead Positions
+        # King vs. king
+        # King and bishop vs. king
+        # King and knight vs. king
+        # King and bishop vs. king and bishop of the same color as the opponent's bishop
+        piece_list: list[tuple[Piece, int, int]] = []
+        for line in range(8):
+            for col in range(8):
+                if self.board.board_content[line][col]:
+                    piece_list.append((self.board.board_content[line][col], line, col))
+
+        if len(piece_list) > 4:
+            return False
+
+        if len(piece_list) == 2:  # King vs. king
+            self.game_status = "Draw by Dead Position"
+            self.board.board_is_active = False
+            self.FEN_list.append(self.board.get_FEN_from_board())
+            return True
+
+        if len(piece_list) == 3:  # King and bishop vs. king / King and knight vs. king
+            # we use this name to avoid a stupid mypy warning if the pieces variable if defined twice ...
+            pieces_piece = [x[0].piece for x in piece_list if x[0].piece != "K"]
+            if pieces_piece[0] in ["B", "N"]:
+                self.game_status = "Draw by Dead Position"
+                self.board.board_is_active = False
+                self.FEN_list.append(self.board.get_FEN_from_board())
+                return True
+
+        if (
+            len(piece_list) == 4
+        ):  # King and bishop vs. king and bishop of the same color as the opponent's bishop
+            pieces = [x for x in piece_list if x[0].piece != "K"]
+            if pieces[0][0].piece != "B" or pieces[1][0].piece != "B":  # 2 bishops
+                return False
+            if pieces[0][0].color == pieces[1][0].color:  # 2 bishops of opposite color
+                return False
+            if (pieces[0][1] + pieces[0][2]) % 2 == (
+                pieces[1][1] + pieces[1][2]
+            ) % 2:  # same color as the opponent's bishop
+                self.game_status = "Draw by Dead Position"
+                self.board.board_is_active = False
+                self.FEN_list.append(self.board.get_FEN_from_board())
+                return True
+
+        return False
 
     def _load_assets(self) -> None:
         # load assets used by the object
@@ -120,9 +181,6 @@ class Game:
             # Update flags
             if self.board.move_played.chess_move.startswith("K"):
                 self.flags[f"{self.flags['color']}King can castle"] = False
-
-            # Check for Null
-            # TBD
 
             # Update Board
             self.board.do_move(self.board.move_played)
