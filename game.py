@@ -83,8 +83,21 @@ class Game:
         # TBD
 
         # Detect 50-Move Rule
-        # if len(self.move_list) < 50:
-        #     return
+        if len(self.move_list) < 50:
+            # at least 50 move
+            return
+        for move in self.move_list[-50:]:
+            # no captures
+            if "x" in move:
+                return
+            # no move by pawn
+            if move[0].islower():
+                return
+
+        self.game_status = "Draw by 50-Move Rule"
+        self.board.board_is_active = False
+        self.FEN_list.append(fen_string)
+        return
 
     def _load_assets(self) -> None:
         # load assets used by the object
