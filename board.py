@@ -49,6 +49,7 @@ class Board:
         self.move_done: bool
         self.move_played: Move
         self.move_map: dict[tuple[int, int], list[Move]]
+        self.board_is_active = True  # set to false when checkmate / stalemate /draw
 
         self.new_move()
 
@@ -80,8 +81,8 @@ class Board:
             self.piece_list[piece] = pygame.image.load(os.path.join(IMG_DIR, f"{piece}.png"))
 
     def update(self) -> None:
-        # do Nothing if move already done
-        if self.move_done:
+        # do Nothing if move already done or game has finished
+        if self.move_done or not self.board_is_active:
             return
 
         # Shall we drag ?

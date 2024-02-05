@@ -61,16 +61,30 @@ class Game:
                 self.game_status = "Checkmate !"
             else:
                 self.game_status = "Stalemate"
+
+            self.board.board_is_active = False
             self.FEN_list.append(self.board.get_FEN_from_board())
+            return
 
+        # Detect draws : https://www.chess.com/terms/draw-chess
         # Detect Threefold Repetition
-        # TBD
-
-        # Detect 50-Move Rule
-        # TBD
+        fen_string = self.board.get_FEN_from_board()
+        cnt = 0
+        for board_fen in reversed(self.FEN_list):
+            if board_fen == fen_string:
+                cnt += 1
+            if cnt >= 2:
+                self.game_status = "Draw by Threefold Repetition"
+                self.board.board_is_active = False
+                self.FEN_list.append(fen_string)
+                return
 
         # Dead Position
         # TBD
+
+        # Detect 50-Move Rule
+        # if len(self.move_list) < 50:
+        #     return
 
     def _load_assets(self) -> None:
         # load assets used by the object
