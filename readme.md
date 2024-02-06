@@ -1,7 +1,7 @@
 # Chess game in python / Pygame
 
 ## Goal
-- [ ] Fist basic UI with PVP
+- [x] First basic UI with PVP (tag 1.0)
 - [ ] Simplistic AI
 - [ ] AI vs AI
 - [ ] More AIs ?
