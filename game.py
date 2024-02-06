@@ -10,7 +10,7 @@ import pygame
 from loguru import logger
 
 from board import BORDER_SIZE, COLOR_SCHEME_LIST, SQUARE_SIZE, Board
-from config import FONT_DIR
+from config import FONT_DIR, SCREEN_HEIGHT, SCREEN_WIDTH
 from piece import Piece
 from position import Position
 
@@ -259,7 +259,9 @@ class Game:
         text = self.font_turn.render(
             "Game ended, play again ?", True, COLOR_SCHEME_LIST[self.board.color_scheme][0]
         )
-        text_rect = text.get_rect(center=(SQUARE_SIZE * 10.5, SQUARE_SIZE * 4))
+        text_rect = text.get_rect(
+            center=(SCREEN_WIDTH - (SCREEN_WIDTH - BOARD_SIZE) / 2, SCREEN_HEIGHT / 3)
+        )
 
         pos_x = text_rect.x - 20
         pos_y = text_rect.y - 10

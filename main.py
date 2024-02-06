@@ -5,6 +5,7 @@ import sys
 
 import pygame
 
+from config import SCREEN_HEIGHT, SCREEN_WIDTH
 from game import Game
 
 
@@ -14,10 +15,10 @@ class Chess:
         self.exit_requested = False
 
         # screen
-        self.game_w = 1280
-        self.game_h = 960
-        self.screen_width = 1280
-        self.screen_height = 960
+        self.screen_width = SCREEN_WIDTH
+        self.screen_height = SCREEN_HEIGHT
+        self.game_w = self.screen_width
+        self.game_h = self.screen_height
 
         self.init_window()
         self.init_screen()
