@@ -9,7 +9,7 @@ import os
 import pygame
 from loguru import logger
 
-from board import BORDER_SIZE, SQUARE_SIZE, Board
+from board import BORDER_SIZE, COLOR_SCHEME_LIST, SQUARE_SIZE, Board
 from config import FONT_DIR
 from piece import Piece
 from position import Position
@@ -23,11 +23,26 @@ BOARD_SIZE = (SQUARE_SIZE * 8) + (BORDER_SIZE * 2)
 class Game:
     def __init__(self) -> None:
         logger.info("Starting Game")
-        self.move_list: list[str] = []
-        self.FEN_list: list[str] = []
+        self.move_list: list[str]
+        self.FEN_list: list[str]
+
         # dict containing information on the game such as
         # who is to play / is a king in check / have king moved (for castle)
-        self.flags: dict[str, str | bool] = {
+        self.flags: dict[str, str | bool]
+        self.game_status: str
+        self.turn: int
+        self.board: Board
+
+        # assets
+        self._load_assets()
+
+        # start
+        self.init_game()
+
+    def init_game(self) -> None:
+        self.move_list = []
+        self.FEN_list = []
+        self.flags = {
             "color": "w",
             "wKing can castle": True,
             "bKing can castle": True,
@@ -35,15 +50,8 @@ class Game:
         }
         self.game_status = "Started"
         self.turn = 1
-
-        # Board
         self.board = Board("WOOD")
         self.board.load_board_from_FEN(FEN_INITIAL_BOARD)
-
-        # assets
-        self._load_assets()
-
-        # start
         self.next_move()
 
     def next_move(self) -> None:
@@ -210,6 +218,8 @@ class Game:
         self.board.render(game_canvas)
         self._render_turn(game_canvas)
         self._render_moves(game_canvas)
+        if self.game_status != "Started":
+            self._render_restart(game_canvas)
 
     def _render_turn(self, game_canvas: pygame.Surface) -> None:
         # render turn number and who's turn is it on screen
@@ -243,3 +253,42 @@ class Game:
                 ),
                 (BOARD_SIZE + BORDER_SIZE, (cnt // 2) * BORDER_SIZE + BORDER_SIZE * 2),
             )
+
+    def _render_restart(self, game_canvas: pygame.Surface) -> None:
+        # play again button
+        text = self.font_turn.render(
+            "Game ended, play again ?", True, COLOR_SCHEME_LIST[self.board.color_scheme][0]
+        )
+        text_rect = text.get_rect(center=(SQUARE_SIZE * 10.5, SQUARE_SIZE * 4))
+
+        pos_x = text_rect.x - 20
+        pos_y = text_rect.y - 10
+        width = text_rect.width + 40
+        height = text_rect.height + 20
+
+        color = COLOR_SCHEME_LIST[self.board.color_scheme][1]
+        if (pos_x < self.board.mouse_coords[0] < pos_x + width) and (
+            pos_y < self.board.mouse_coords[1] < pos_y + height
+        ):
+            color = COLOR_SCHEME_LIST[self.board.color_scheme][2]
+            if self.board.mouse_clicked["BUTTONDOWN"]:
+                # restart game
+                self.init_game()
+
+        pygame.draw.rect(
+            game_canvas,
+            color,
+            pygame.Rect(
+                pos_x,
+                pos_y,
+                width,
+                height,
+            ),
+            0,
+            5,
+        )
+
+        game_canvas.blit(
+            text,
+            text_rect,
+        )
