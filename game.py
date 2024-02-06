@@ -31,6 +31,8 @@ class Game:
         self.flags: dict[str, str | bool]
         self.game_status: str
         self.turn: int
+        self.waiting_for_promotion: bool
+        self.promote_choice: str
         self.board: Board
 
         # assets
@@ -49,6 +51,8 @@ class Game:
             "previous_move": "",
         }
         self.game_status = "Started"
+        self.waiting_for_promotion = False
+        self.promote_choice = ""
         self.turn = 1
         self.board = Board("WOOD")
         self.board.load_board_from_FEN(FEN_INITIAL_BOARD)
@@ -183,6 +187,25 @@ class Game:
         if self.board.move_done:
             # move done => update board and game objects
 
+            # check for promotion loop until the piece type is chosen
+            if self.board.move_played.chess_move[0].islower():
+                if (self.flags["color"] == "w" and self.board.move_played.square_to[0] == 0) or (
+                    self.flags["color"] == "b" and self.board.move_played.square_to[0] == 7
+                ):
+                    self.waiting_for_promotion = True
+
+            if self.waiting_for_promotion:
+                if not self.promote_choice:
+                    return
+                else:
+                    # add piece to chess move and transform pawn in promoted piece
+                    self.board.move_played.chess_move += self.promote_choice
+                    self.board.board_content[self.board.move_played.square_from[0]][
+                        self.board.move_played.square_from[1]
+                    ].piece = self.promote_choice
+                    self.waiting_for_promotion = False
+                    self.promote_choice = ""
+
             # register FEN Board
             self.FEN_list.append(self.board.get_FEN_from_board())
 
@@ -218,6 +241,8 @@ class Game:
         self.board.render(game_canvas)
         self._render_turn(game_canvas)
         self._render_moves(game_canvas)
+        if self.waiting_for_promotion:
+            self._render_promotion_choices(game_canvas)
         if self.game_status != "Started":
             self._render_restart(game_canvas)
 
@@ -294,3 +319,78 @@ class Game:
             text,
             text_rect,
         )
+
+    def _render_promotion_choices(self, game_canvas: pygame.Surface) -> None:
+        text = self.font_turn.render(
+            "Promotion: please choose you piece",
+            True,
+            COLOR_SCHEME_LIST[self.board.color_scheme][0],
+        )
+        text_rect = text.get_rect(
+            center=(SCREEN_WIDTH - (SCREEN_WIDTH - BOARD_SIZE) / 2, SCREEN_HEIGHT / 3)
+        )
+
+        pos_x = text_rect.x - 20
+        pos_y = text_rect.y - 10
+        width = text_rect.width + 40
+        height = text_rect.height + 20 + SQUARE_SIZE
+
+        pygame.draw.rect(
+            game_canvas,
+            COLOR_SCHEME_LIST[self.board.color_scheme][1],
+            pygame.Rect(
+                pos_x,
+                pos_y,
+                width,
+                height,
+            ),
+            0,
+            5,
+        )
+
+        game_canvas.blit(
+            text,
+            text_rect,
+        )
+
+        self._render_promotion_pieces_mouse_over(game_canvas)
+        self._render_promotion_pieces(game_canvas)
+
+    def _render_promotion_pieces(self, game_canvas: pygame.Surface) -> None:
+        for nb, piece in enumerate(["Q", "R", "B", "N"]):
+            game_canvas.blit(
+                self.board.piece_list[f"{piece}{self.flags['color']}"],
+                (
+                    BOARD_SIZE + 10 + (SQUARE_SIZE + 4) * nb,
+                    15 + SCREEN_HEIGHT / 3,
+                ),
+            )
+
+    def _render_promotion_pieces_mouse_over(self, game_canvas: pygame.Surface) -> None:
+        for nb, piece in enumerate(["Q", "R", "B", "N"]):
+            pos_x = (BOARD_SIZE + 10 + (SQUARE_SIZE + 4) * nb) + 7
+            pos_y = (15 + SCREEN_HEIGHT / 3) + 7
+            width = SQUARE_SIZE - 14
+            height = SQUARE_SIZE - 14
+
+            color = COLOR_SCHEME_LIST[self.board.color_scheme][0]
+
+            if (pos_x < self.board.mouse_coords[0] < pos_x + width) and (
+                pos_y < self.board.mouse_coords[1] < pos_y + height
+            ):
+                color = COLOR_SCHEME_LIST[self.board.color_scheme][2]
+                if self.board.mouse_clicked["BUTTONDOWN"]:
+                    self.promote_choice = piece
+
+            pygame.draw.rect(
+                game_canvas,
+                color,
+                pygame.Rect(
+                    pos_x,
+                    pos_y,
+                    width,
+                    height,
+                ),
+                0,
+                3,
+            )
