@@ -10,7 +10,7 @@ import pygame
 from loguru import logger
 
 from board import BORDER_SIZE, COLOR_SCHEME_LIST, SQUARE_SIZE, Board
-from config import FONT_DIR, SCREEN_HEIGHT, SCREEN_WIDTH
+from config import FONT_DIR, SCREEN_HEIGHT, SCREEN_WIDTH, SOUND_DIR
 from piece import Piece
 from position import Position
 
@@ -56,6 +56,7 @@ class Game:
         self.turn = 1
         self.board = Board("WOOD")
         self.board.load_board_from_FEN(FEN_INITIAL_BOARD)
+        pygame.mixer.Sound.play(self.snd_game_start)
         self.next_move()
 
     def next_move(self) -> None:
@@ -64,7 +65,10 @@ class Game:
         self.board.move_map = self.position.move_map
 
         # check for end of game
-        self.detect_end_of_game()
+        if self.board.board_is_active:
+            self.detect_end_of_game()
+            if not self.board.board_is_active:
+                pygame.mixer.Sound.play(self.snd_game_end)
 
     def detect_end_of_game(self) -> None:
         if self.is_checkmate_stalemate():
@@ -182,6 +186,16 @@ class Game:
         # https://www.dafont.com/fr/nk57-monospace.font
         self.font_move = pygame.font.Font(os.path.join(FONT_DIR, "nk57-monospace-no-bd.otf"), 14)
 
+        # Sounds
+        self.snd_game_start = pygame.mixer.Sound(os.path.join(SOUND_DIR, "start.wav"))
+        self.snd_game_start.set_volume(0.8)
+        self.snd_game_end = pygame.mixer.Sound(os.path.join(SOUND_DIR, "end.wav"))
+        self.snd_game_end.set_volume(0.8)
+        self.snd_move_piece = pygame.mixer.Sound(os.path.join(SOUND_DIR, "move.wav"))
+        self.snd_move_piece.set_volume(0.8)
+        self.snd_check = pygame.mixer.Sound(os.path.join(SOUND_DIR, "check.wav"))
+        self.snd_check.set_volume(0.8)
+
     def update(self) -> None:
         self.board.update()
         if self.board.move_done:
@@ -226,10 +240,12 @@ class Game:
             if self.position.king_is_in_check(self.board.board_content):
                 logger.info(f"{self.flags['color']} King is in check")
                 self.board.move_played.chess_move += "+"
+                pygame.mixer.Sound.play(self.snd_check)
 
             # register move
             self.flags["previous_move"] = self.board.move_played.chess_move
             self.move_list.append(self.board.move_played.chess_move)
+            pygame.mixer.Sound.play(self.snd_move_piece)
 
             if self.flags["color"] == "w":
                 self.turn += 1
