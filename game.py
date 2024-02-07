@@ -10,6 +10,7 @@ import pygame
 from loguru import logger
 
 from board import BORDER_SIZE, COLOR_SCHEME_LIST, SQUARE_SIZE, Board
+from common import center_text
 from config import FONT_DIR, SCREEN_HEIGHT, SCREEN_WIDTH, SOUND_DIR
 from piece import Piece
 from position import Position
@@ -22,7 +23,6 @@ BOARD_SIZE = (SQUARE_SIZE * 8) + (BORDER_SIZE * 2)
 
 class Game:
     def __init__(self) -> None:
-        logger.info("Starting Game")
         self.move_list: list[str]
         self.FEN_list: list[str]
 
@@ -42,13 +42,16 @@ class Game:
         self.init_game()
 
     def init_game(self) -> None:
+        logger.info("Starting Game")
         self.move_list = []
         self.FEN_list = []
         self.flags = {
             "color": "w",
             "wKing can castle": True,
             "bKing can castle": True,
-            "previous_move": "",
+            "previous move": "",
+            "game_type": "PVP",  # PVP / PVAI / AIVAI
+            "player color": "wb",
         }
         self.game_status = "Started"
         self.waiting_for_promotion = False
@@ -243,7 +246,7 @@ class Game:
                 pygame.mixer.Sound.play(self.snd_check)
 
             # register move
-            self.flags["previous_move"] = self.board.move_played.chess_move
+            self.flags["previous move"] = self.board.move_played.chess_move
             self.move_list.append(self.board.move_played.chess_move)
             pygame.mixer.Sound.play(self.snd_move_piece)
 
@@ -257,6 +260,7 @@ class Game:
         self.board.render(game_canvas)
         self._render_turn(game_canvas)
         self._render_moves(game_canvas)
+        self._render_players_status(game_canvas)
         if self.waiting_for_promotion:
             self._render_promotion_choices(game_canvas)
         if self.game_status != "Started":
@@ -295,13 +299,31 @@ class Game:
                 (BOARD_SIZE + BORDER_SIZE, (cnt // 2) * BORDER_SIZE + BORDER_SIZE * 2),
             )
 
+    def _render_players_status(self, game_canvas: pygame.Surface) -> None:
+        # show player type under the board
+        text, text_rect = center_text(
+            f"White: {'Human' if 'w' in str(self.flags['player color']) else 'AI'}",
+            self.font_turn,
+            pygame.Color("White"),
+            (BORDER_SIZE * 10, BOARD_SIZE + BORDER_SIZE),
+        )
+        game_canvas.blit(text, text_rect)
+
+        text, text_rect = center_text(
+            f"Black: {'Human' if 'b' in str(self.flags['player color']) else 'AI'}",
+            self.font_turn,
+            pygame.Color("White"),
+            (BOARD_SIZE - BORDER_SIZE * 10, BOARD_SIZE + BORDER_SIZE),
+        )
+        game_canvas.blit(text, text_rect)
+
     def _render_restart(self, game_canvas: pygame.Surface) -> None:
         # play again button
-        text = self.font_turn.render(
-            "Game ended, play again ?", True, COLOR_SCHEME_LIST[self.board.color_scheme][0]
-        )
-        text_rect = text.get_rect(
-            center=(SCREEN_WIDTH - (SCREEN_WIDTH - BOARD_SIZE) / 2, SCREEN_HEIGHT / 3)
+        text, text_rect = center_text(
+            "Game ended, play again ?",
+            self.font_turn,
+            COLOR_SCHEME_LIST[self.board.color_scheme][0],
+            (SCREEN_WIDTH - (SCREEN_WIDTH - BOARD_SIZE) / 2, SCREEN_HEIGHT / 3),
         )
 
         pos_x = text_rect.x - 20
@@ -331,19 +353,14 @@ class Game:
             5,
         )
 
-        game_canvas.blit(
-            text,
-            text_rect,
-        )
+        game_canvas.blit(text, text_rect)
 
     def _render_promotion_choices(self, game_canvas: pygame.Surface) -> None:
-        text = self.font_turn.render(
+        text, text_rect = center_text(
             "Promotion: please choose you piece",
-            True,
+            self.font_turn,
             COLOR_SCHEME_LIST[self.board.color_scheme][0],
-        )
-        text_rect = text.get_rect(
-            center=(SCREEN_WIDTH - (SCREEN_WIDTH - BOARD_SIZE) / 2, SCREEN_HEIGHT / 3)
+            (SCREEN_WIDTH - (SCREEN_WIDTH - BOARD_SIZE) / 2, SCREEN_HEIGHT / 3),
         )
 
         pos_x = text_rect.x - 20
@@ -364,10 +381,7 @@ class Game:
             5,
         )
 
-        game_canvas.blit(
-            text,
-            text_rect,
-        )
+        game_canvas.blit(text, text_rect)
 
         self._render_promotion_pieces_mouse_over(game_canvas)
         self._render_promotion_pieces(game_canvas)

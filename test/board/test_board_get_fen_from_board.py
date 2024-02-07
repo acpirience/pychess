@@ -21,7 +21,7 @@ def test_flags() -> dict[str, str | bool]:
         "color": "w",
         "wKing can castle": True,
         "bKing can castle": True,
-        "previous_move": "",
+        "previous move": "",
     }
 
 

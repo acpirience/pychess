@@ -22,7 +22,7 @@ def test_flags() -> dict[str, str | bool]:
         "color": "w",
         "wKing can castle": True,
         "bKing can castle": True,
-        "previous_move": "",
+        "previous move": "",
     }
 
 
@@ -101,7 +101,7 @@ def test_black_pawns_move_and_take(test_board: Board, test_flags: dict[str, str 
 
 def test_pawns_capture_en_passant(test_board: Board, test_flags: dict[str, str | bool]) -> None:
     test_board.load_board_from_FEN("8/8/8/pPp5/8/8/8/8")
-    test_flags["previous_move"] = "a7a5"
+    test_flags["previous move"] = "a7a5"
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()
@@ -116,7 +116,7 @@ def test_black_pawns_capture_en_passant(
 ) -> None:
     test_board.load_board_from_FEN("8/8/8/8/4PpP1/8/8/8")
     test_flags["color"] = "b"
-    test_flags["previous_move"] = "e2e4"
+    test_flags["previous move"] = "e2e4"
 
     test_position = Position(test_board.board_content, test_flags)
     possible_moves = test_position.get_valid_moves()

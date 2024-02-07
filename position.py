@@ -167,13 +167,13 @@ class Position:
                 if 0 <= col + i <= 7:
                     # previous move was a pawn moving 2 squares on left or right of pawn
                     if (
-                        str(self.flags["previous_move"])[-2:]
+                        str(self.flags["previous move"])[-2:]
                         == f"{Position._xy_to_chess_coords(line, col + i)}"  # end square is beside pawn
-                        and len(str(self.flags["previous_move"]))
+                        and len(str(self.flags["previous move"]))
                         == 4  # pawn move is 4 length string
                         and abs(
-                            int(str(self.flags["previous_move"])[-1])
-                            - int(str(self.flags["previous_move"])[-3])
+                            int(str(self.flags["previous move"])[-1])
+                            - int(str(self.flags["previous move"])[-3])
                         )
                         == 2  # 2 square move
                     ):
