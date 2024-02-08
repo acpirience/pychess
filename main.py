@@ -7,6 +7,7 @@ import pygame
 
 from config import SCREEN_HEIGHT, SCREEN_WIDTH
 from game import Game
+from startMenu import StartMenu
 
 
 class Chess:
@@ -22,7 +23,9 @@ class Chess:
 
         self.init_window()
         self.init_screen()
-        self.game = Game()
+        self.game_status = "start menu"
+        self.start_menu = StartMenu()
+        self.game: Game
 
         # Mouse
         pygame.mouse.set_visible(True)
@@ -70,14 +73,30 @@ class Chess:
                 self.mouse_clicked["BUTTONDOWN"] = True
 
     def update(self) -> None:
-        self.game.board.mouse_coords = self.mouse_coords
-        self.game.board.mouse_clicked = self.mouse_clicked
-        self.game.update()
+        if self.game_status == "game started":
+            self.game.board.mouse_coords = self.mouse_coords
+            self.game.board.mouse_clicked = self.mouse_clicked
+            self.game.update()
+
+        if self.game_status == "start menu":
+            self.start_menu.mouse_coords = self.mouse_coords
+            self.start_menu.mouse_clicked = self.mouse_clicked
+            self.start_menu.update()
+            if self.start_menu.menu_done:
+                self.game_status = "start menu done"
+
+        if self.game_status == "start menu done":
+            self.game = Game()
+            self.game_status = "game started"
 
     def render(self) -> None:
         self.game_canvas.fill(pygame.Color("Dark Green"))
 
-        self.game.render(self.game_canvas)
+        if self.game_status == "start menu":
+            self.start_menu.render(self.game_canvas)
+
+        if self.game_status == "game started":
+            self.game.render(self.game_canvas)
 
         self.screen.blit(
             pygame.transform.scale(self.game_canvas, (self.blit_w, self.blit_h)),
