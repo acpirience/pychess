@@ -338,7 +338,8 @@ class Game:
             color = COLOR_SCHEME_LIST[self.board.color_scheme][2]
             if self.board.mouse_clicked["BUTTONDOWN"]:
                 # restart game
-                self.init_game()
+                logger.info(self.game_status)
+                self.game_status = "Restart ready"
 
         pygame.draw.rect(
             game_canvas,

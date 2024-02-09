@@ -74,9 +74,13 @@ class Chess:
 
     def update(self) -> None:
         if self.game_status == "game started":
-            self.game.board.mouse_coords = self.mouse_coords
-            self.game.board.mouse_clicked = self.mouse_clicked
-            self.game.update()
+            if self.game.game_status != "Restart ready":
+                self.game.board.mouse_coords = self.mouse_coords
+                self.game.board.mouse_clicked = self.mouse_clicked
+                self.game.update()
+            else:
+                self.game_status = "start menu"
+                self.start_menu = StartMenu()
 
         if self.game_status == "start menu":
             self.start_menu.mouse_coords = self.mouse_coords

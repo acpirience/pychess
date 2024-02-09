@@ -7,6 +7,7 @@ Menu used to select type of game: PVP, PVAI, AIVAI
 import os
 
 import pygame
+from loguru import logger
 
 from common import center_text
 from config import FONT_DIR, SCREEN_WIDTH
@@ -19,6 +20,7 @@ class StartMenu:
         self.menu_done = False
         self.game_type: str
         self._load_assets()
+        logger.info("Choosing game type")
 
     def _load_assets(self) -> None:
         # load assets used by the object TBD make an asset object shared by all
@@ -26,7 +28,7 @@ class StartMenu:
         # fonts
         # https://www.dafont.com/fr/coolvetica.font
         self.font_menu = pygame.font.Font(os.path.join(FONT_DIR, "coolvetica rg.otf"), 36)
-        self.font_title = pygame.font.Font(os.path.join(FONT_DIR, "coolvetica rg.otf"), 40)
+        self.font_menu_title = pygame.font.Font(os.path.join(FONT_DIR, "coolvetica rg.otf"), 40)
 
     def update(self) -> None:
         pass
@@ -38,7 +40,7 @@ class StartMenu:
     def _render_title(self, game_canvas: pygame.Surface) -> None:
         text, text_rect = center_text(
             "CHESS GAME",
-            self.font_title,
+            self.font_menu_title,
             pygame.Color("White"),
             (SCREEN_WIDTH / 2, 40),
         )
@@ -60,7 +62,7 @@ class StartMenu:
                 menu_item,
                 self.font_menu,
                 pygame.Color("White"),
-                (SCREEN_WIDTH / 2, 300 + line * 150),
+                (SCREEN_WIDTH / 2, 300 + line * 100),
             )
 
             color = pygame.Color("Dark Green")
@@ -75,6 +77,7 @@ class StartMenu:
             ):
                 color = pygame.Color("Dark Gray")
                 if self.mouse_clicked["BUTTONDOWN"]:
+                    logger.info(menu_item)
                     if line == 0:
                         self.game_type = "PVP"
                         self.menu_done = True
