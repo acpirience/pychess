@@ -90,7 +90,7 @@ class Chess:
                 self.game_status = "start menu done"
 
         if self.game_status == "start menu done":
-            self.game = Game()
+            self.game = Game(self.start_menu.game_type, self.start_menu.color)
             self.game_status = "game started"
 
     def render(self) -> None:

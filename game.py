@@ -22,7 +22,7 @@ BOARD_SIZE = (SQUARE_SIZE * 8) + (BORDER_SIZE * 2)
 
 
 class Game:
-    def __init__(self) -> None:
+    def __init__(self, game_type: str = "PVP", player_color: str = "wb") -> None:
         self.move_list: list[str]
         self.FEN_list: list[str]
 
@@ -35,6 +35,15 @@ class Game:
         self.promote_choice: str
         self.board: Board
 
+        self.flags = {
+            "color": "w",
+            "wKing can castle": True,
+            "bKing can castle": True,
+            "previous move": "",
+            "game type": game_type,  # PVP / PVAI / AIVAI
+            "player color": player_color,  # w / b / wb
+        }
+
         # assets
         self._load_assets()
 
@@ -45,14 +54,6 @@ class Game:
         logger.info("Starting Game")
         self.move_list = []
         self.FEN_list = []
-        self.flags = {
-            "color": "w",
-            "wKing can castle": True,
-            "bKing can castle": True,
-            "previous move": "",
-            "game_type": "PVP",  # PVP / PVAI / AIVAI
-            "player color": "wb",
-        }
         self.game_status = "Started"
         self.waiting_for_promotion = False
         self.promote_choice = ""
@@ -72,6 +73,16 @@ class Game:
             self.detect_end_of_game()
             if not self.board.board_is_active:
                 pygame.mixer.Sound.play(self.snd_game_end)
+
+        # signal to the board if a human is player next move
+        if str(self.flags["color"]) in str(self.flags["player color"]):
+            self.board.player_plays = True
+        else:
+            self.board.player_plays = False
+
+        logger.info(
+            f"{'White' if self.flags['color'] == 'w' else 'Black'} ({'Player' if self.board.player_plays else 'AI'}) plays"
+        )
 
     def detect_end_of_game(self) -> None:
         if self.is_checkmate_stalemate():

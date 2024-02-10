@@ -46,6 +46,9 @@ class Board:
         self.drag: bool
         self.drag_from: tuple[int, int]
         self.drag_piece: Piece
+
+        #
+        self.player_plays = False
         self.move_done: bool
         self.move_played: Move
         self.move_map: dict[tuple[int, int], list[Move]]
@@ -82,7 +85,7 @@ class Board:
 
     def update(self) -> None:
         # do Nothing if move already done or game has finished
-        if self.move_done or not self.board_is_active:
+        if self.move_done or (not self.board_is_active) or (not self.player_plays):
             return
 
         # Shall we drag ?

@@ -80,7 +80,15 @@ class StartMenu:
                     logger.info(menu_item)
                     if line == 0:
                         self.game_type = "PVP"
-                        self.menu_done = True
+                        self.color = "wb"
+                    elif line == 1:
+                        self.game_type = "PVAI"
+                        self.color = "w"
+                    elif line == 2:
+                        self.game_type = "PVAI"
+                        self.color = "b"
+
+                    self.menu_done = True
 
             pygame.draw.rect(
                 game_canvas,
