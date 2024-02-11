@@ -9,6 +9,7 @@ import os
 import pygame
 from loguru import logger
 
+from ai.ai import Ai
 from board import BORDER_SIZE, COLOR_SCHEME_LIST, SQUARE_SIZE, Board
 from common import center_text
 from config import FONT_DIR, SCREEN_HEIGHT, SCREEN_WIDTH, SOUND_DIR
@@ -34,6 +35,7 @@ class Game:
         self.waiting_for_promotion: bool
         self.promote_choice: str
         self.board: Board
+        self.ai: Ai
 
         self.flags = {
             "color": "w",
@@ -79,6 +81,7 @@ class Game:
             self.board.player_plays = True
         else:
             self.board.player_plays = False
+            self.ai = Ai(self.position, str(self.flags["color"]))
 
         logger.info(
             f"{'White' if self.flags['color'] == 'w' else 'Black'} ({'Player' if self.board.player_plays else 'AI'}) plays"
@@ -212,59 +215,70 @@ class Game:
 
     def update(self) -> None:
         self.board.update()
-        if self.board.move_done:
-            # move done => update board and game objects
+        if self.board.player_plays and not self.board.move_done:
+            return
 
-            # check for promotion loop until the piece type is chosen
-            if self.board.move_played.chess_move[0].islower():
-                if (self.flags["color"] == "w" and self.board.move_played.square_to[0] == 0) or (
-                    self.flags["color"] == "b" and self.board.move_played.square_to[0] == 7
-                ):
-                    self.waiting_for_promotion = True
+        if not self.board.player_plays and not self.ai.get_next_move_finished:
+            return
 
-            if self.waiting_for_promotion:
-                if not self.promote_choice:
-                    return
-                else:
-                    # add piece to chess move and transform pawn in promoted piece
-                    self.board.move_played.chess_move += self.promote_choice
-                    self.board.board_content[self.board.move_played.square_from[0]][
-                        self.board.move_played.square_from[1]
-                    ].piece = self.promote_choice
-                    self.waiting_for_promotion = False
-                    self.promote_choice = ""
+        if not self.board.player_plays and self.ai.get_next_move_finished:
+            self.board.move_played = self.ai.move
 
-            # register FEN Board
-            self.FEN_list.append(self.board.get_FEN_from_board())
+        # move done by either player or AI => update board and game objects
 
-            # Update flags
-            if self.board.move_played.chess_move.startswith("K"):
-                self.flags[f"{self.flags['color']}King can castle"] = False
+        # check for promotion loop until the piece type is chosen
+        if self.board.move_played.chess_move[0].islower():
+            if (self.flags["color"] == "w" and self.board.move_played.square_to[0] == 0) or (
+                self.flags["color"] == "b" and self.board.move_played.square_to[0] == 7
+            ):
+                self.waiting_for_promotion = True
+                if not self.board.player_plays:
+                    self.promote_choice = self.board.move_played.chess_move[-1]
 
-            # Update Board
-            self.board.do_move(self.board.move_played)
-
-            # switch Player
-            if self.flags["color"] == "w":
-                self.flags["color"] = "b"
+        if self.waiting_for_promotion:
+            if not self.promote_choice:
+                return
             else:
-                self.flags["color"] = "w"
+                # add piece to chess move and transform pawn in promoted piece
+                if self.board.player_plays:
+                    self.board.move_played.chess_move += self.promote_choice
+                self.board.board_content[self.board.move_played.square_from[0]][
+                    self.board.move_played.square_from[1]
+                ].piece = self.promote_choice
+                self.waiting_for_promotion = False
+                self.promote_choice = ""
 
-            # check if opposite king is in check
-            if self.position.king_is_in_check(self.board.board_content):
-                logger.info(f"{self.flags['color']} King is in check")
-                self.board.move_played.chess_move += "+"
-                pygame.mixer.Sound.play(self.snd_check)
+        # register FEN Board
+        self.FEN_list.append(self.board.get_FEN_from_board())
 
-            # register move
-            self.flags["previous move"] = self.board.move_played.chess_move
-            self.move_list.append(self.board.move_played.chess_move)
-            pygame.mixer.Sound.play(self.snd_move_piece)
+        # Update flags
+        if self.board.move_played.chess_move.startswith("K"):
+            self.flags[f"{self.flags['color']}King can castle"] = False
 
-            if self.flags["color"] == "w":
-                self.turn += 1
+        # Update Board
+        self.board.do_move(self.board.move_played)
 
-            self.next_move()
+        # switch Player
+        if self.flags["color"] == "w":
+            self.flags["color"] = "b"
+        else:
+            self.flags["color"] = "w"
+
+        # check if opposite king is in check
+        if self.position.king_is_in_check(self.board.board_content):
+            logger.info(f"{self.flags['color']} King is in check")
+            self.board.move_played.chess_move += "+"
+            pygame.mixer.Sound.play(self.snd_check)
+
+        # register move
+        self.flags["previous move"] = self.board.move_played.chess_move
+        self.move_list.append(self.board.move_played.chess_move)
+        pygame.mixer.Sound.play(self.snd_move_piece)
+
+        if self.flags["color"] == "w":
+            self.turn += 1
+
+        self.next_move()
 
     def render(self, game_canvas: pygame.Surface) -> None:
         # render Board and game informations on screen
