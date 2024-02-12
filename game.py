@@ -62,7 +62,8 @@ class Game:
         self.turn = 1
         self.board = Board("WOOD")
         self.board.load_board_from_FEN(FEN_INITIAL_BOARD)
-        pygame.mixer.Sound.play(self.snd_game_start)
+        if self.flags["game type"] != "AIVAI":
+            pygame.mixer.Sound.play(self.snd_game_start)
         self.next_move()
 
     def next_move(self) -> None:
@@ -74,7 +75,8 @@ class Game:
         if self.board.board_is_active:
             self.detect_end_of_game()
             if not self.board.board_is_active:
-                pygame.mixer.Sound.play(self.snd_game_end)
+                if self.flags["game type"] != "AIVAI":
+                    pygame.mixer.Sound.play(self.snd_game_end)
 
         # signal to the board if a human is player next move
         if str(self.flags["color"]) in str(self.flags["player color"]):
@@ -273,12 +275,14 @@ class Game:
         if self.position.king_is_in_check(self.board.board_content):
             logger.info(f"{self.flags['color']} King is in check")
             self.board.move_played.chess_move += "+"
-            pygame.mixer.Sound.play(self.snd_check)
+            if self.flags["game type"] != "AIVAI":
+                pygame.mixer.Sound.play(self.snd_check)
 
         # register move
         self.flags["previous move"] = self.board.move_played.chess_move
         self.move_list.append(self.board.move_played.chess_move)
-        pygame.mixer.Sound.play(self.snd_move_piece)
+        if self.flags["game type"] != "AIVAI":
+            pygame.mixer.Sound.play(self.snd_move_piece)
 
         if self.flags["color"] == "w":
             self.turn += 1
