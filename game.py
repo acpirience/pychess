@@ -81,7 +81,8 @@ class Game:
             self.board.player_plays = True
         else:
             self.board.player_plays = False
-            self.ai = Ai(self.position, str(self.flags["color"]))
+            if self.game_status == "Started":
+                self.ai = Ai(self.position, str(self.flags["color"]))
 
         logger.info(
             f"{'White' if self.flags['color'] == 'w' else 'Black'} ({'Player' if self.board.player_plays else 'AI'}) plays"
@@ -215,6 +216,9 @@ class Game:
 
     def update(self) -> None:
         self.board.update()
+        if self.game_status != "Started":
+            return
+
         if self.board.player_plays and not self.board.move_done:
             return
 
@@ -223,6 +227,7 @@ class Game:
 
         if not self.board.player_plays and self.ai.get_next_move_finished:
             self.board.move_played = self.ai.move
+            self.ai.get_next_move_finished = True
 
         # move done by either player or AI => update board and game objects
 
@@ -310,19 +315,31 @@ class Game:
 
     def _render_moves(self, game_canvas: pygame.Surface) -> None:
         # render turn number and who's turn is it on screen
+        nb_move = len(self.move_list)
+        offset = 0
+        if nb_move > 144:  # max possible move to show on screen
+            offset = nb_move - 144
+
         for cnt, move in enumerate(self.move_list):
-            if cnt % 2 == 0:
-                move = f"{(cnt+2)//2:0>2} {move} "
-            else:
-                move = f"          - {move}"
-            game_canvas.blit(
-                self.font_move.render(
-                    move,
-                    True,
-                    pygame.Color("White"),
-                ),
-                (BOARD_SIZE + BORDER_SIZE, (cnt // 2) * BORDER_SIZE + BORDER_SIZE * 2),
-            )
+            if (cnt - offset) >= 0:
+                col = (cnt - offset) // 72
+                if cnt % 2 == 0:
+                    move = f"{(cnt+2)//2:0>2} {move} "
+                else:
+                    move = f"          - {move}"
+                game_canvas.blit(
+                    self.font_move.render(
+                        move,
+                        True,
+                        pygame.Color("White"),
+                    ),
+                    (
+                        BOARD_SIZE + BORDER_SIZE + BORDER_SIZE * 8 * col,
+                        (((cnt - offset) // 2) * BORDER_SIZE)
+                        - (col * 36 * BORDER_SIZE)
+                        + BORDER_SIZE * 2,
+                    ),
+                )
 
     def _render_players_status(self, game_canvas: pygame.Surface) -> None:
         # show player type under the board

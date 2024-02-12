@@ -56,7 +56,12 @@ class StartMenu:
         game_canvas.blit(text, text_rect)
 
         for line, menu_item in enumerate(
-            ["Player versus Player", "Player as White vers AI", "Player as Black vers AI"]
+            [
+                "Player versus Player",
+                "Player as White vers AI",
+                "Player as Black vers AI",
+                "AI vs AI",
+            ]
         ):
             text, text_rect = center_text(
                 menu_item,
@@ -87,6 +92,9 @@ class StartMenu:
                     elif line == 2:
                         self.game_type = "PVAI"
                         self.color = "b"
+                    elif line == 3:
+                        self.game_type = "AIVAI"
+                        self.color = ""
 
                     self.menu_done = True
 
