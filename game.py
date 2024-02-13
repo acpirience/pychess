@@ -5,6 +5,7 @@ Chess game
 """
 
 import os
+import sys
 
 import pygame
 from loguru import logger
@@ -24,7 +25,11 @@ BOARD_SIZE = (SQUARE_SIZE * 8) + (BORDER_SIZE * 2)
 
 class Game:
     def __init__(
-        self, game_type: str = "PVP", player_color: str = "wb", batched: bool = False
+        self,
+        game_type: str = "PVP",
+        player_color: str = "wb",
+        ai_types: tuple[str, str] = ("random", "random"),
+        batched: bool = False,
     ) -> None:
         self.move_list: list[str]
         self.FEN_list: list[str]
@@ -39,6 +44,7 @@ class Game:
         self.board: Board
         self.ai: Ai
         self.batched = batched
+        self.ai_type: dict[str, str] = {"w": ai_types[0], "b": ai_types[1]}
 
         self.flags = {
             "color": "w",
@@ -57,7 +63,8 @@ class Game:
         self.init_game()
 
     def init_game(self) -> None:
-        logger.info("Starting Game")
+        white_text, black_text = self.get_player_status()
+        logger.info(f"Starting Game {white_text} vs {black_text}")
         self.move_list = []
         self.FEN_list = []
         self.game_status = "Started"
@@ -88,12 +95,29 @@ class Game:
         else:
             self.board.player_plays = False
             if self.game_status == "Started":
-                self.ai = Ai(self.position, str(self.flags["color"]))
+                self.ai = self.get_ai()
+
+                Ai(self.position, str(self.flags["color"]))
 
         if not self.batched:
             logger.info(
                 f"Turn {self.turn} {COLOR_TO_TEXT[str(self.flags['color'])]} ({'Player' if self.board.player_plays else 'AI'}) plays"
             )
+
+    def get_ai(self) -> Ai:
+        color = str(self.flags["color"])
+        match self.ai_type[color]:
+            case "random":
+                from ai.random_ai import Random_Ai
+
+                return Random_Ai(self.position, color)
+            case "basic":
+                from ai.basic_ai import Basic_Ai
+
+                return Basic_Ai(self.position, color)
+            case _:
+                logger.error(f"Unknwon AI type {self.ai_type[color]}")
+                sys.exit(1)
 
     def detect_end_of_game(self) -> None:
         if self.is_checkmate_stalemate():
@@ -355,8 +379,10 @@ class Game:
 
     def _render_players_status(self, game_canvas: pygame.Surface) -> None:
         # show player type under the board
+        white_text, black_text = self.get_player_status()
+
         text, text_rect = center_text(
-            f"White: {'Human' if 'w' in str(self.flags['player color']) else 'AI'}",
+            white_text,
             self.font_turn,
             pygame.Color("White"),
             (BORDER_SIZE * 10, BOARD_SIZE + BORDER_SIZE),
@@ -364,12 +390,17 @@ class Game:
         game_canvas.blit(text, text_rect)
 
         text, text_rect = center_text(
-            f"Black: {'Human' if 'b' in str(self.flags['player color']) else 'AI'}",
+            black_text,
             self.font_turn,
             pygame.Color("White"),
             (BOARD_SIZE - BORDER_SIZE * 10, BOARD_SIZE + BORDER_SIZE),
         )
         game_canvas.blit(text, text_rect)
+
+    def get_player_status(self) -> tuple[str, str]:
+        white_text = f"White: {'Human' if 'w' in str(self.flags['player color']) else 'AI (' + self.ai_type['w'] + ')'}"
+        black_text = f"Black: {'Human' if 'b' in str(self.flags['player color']) else 'AI (' + self.ai_type['b'] + ')'}"
+        return white_text, black_text
 
     def _render_restart(self, game_canvas: pygame.Surface) -> None:
         # play again button

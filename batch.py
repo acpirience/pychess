@@ -8,15 +8,16 @@ from game import COLOR_TO_TEXT, Game
 
 
 class BatchChess:
-    def __init__(self, nb_game: int = 1) -> None:
+    def __init__(self, nb_game: int = 1, ai: tuple[str, str] = ("random", "random")) -> None:
         self.exit_requested = False
 
         self.game_status = "started"
         self.game: Game
         self.nb_game_left = nb_game
+        self.ai = ai
         self.results: dict[str, int] = {
-            "Black wins": 0,
             "White wins": 0,
+            "Black wins": 0,
             "Null: Stalemate": 0,
             "Null: Draw by Threefold Repetition": 0,
             "Null: Draw by 50-Move Rule": 0,
@@ -30,7 +31,7 @@ class BatchChess:
     def update(self) -> None:
         if self.game_status == "started":
             logger.info(f"{self.nb_game_left} games left")
-            self.game = Game("AIVAI", "", True)
+            self.game = Game("AIVAI", "", self.ai, True)
             self.game_status = "game started"
 
         if self.game_status == "game started":
@@ -58,7 +59,7 @@ class BatchChess:
 
 
 if __name__ == "__main__":
-    g = BatchChess(200)
+    g = BatchChess(200, ("random", "basic"))
     g.game_loop()
     logger.info("*" * 40)
     for result in g.results:
