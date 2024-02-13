@@ -1,5 +1,5 @@
 """
-        Chess Game
+        Chess Game: point of entry for interactive game on screen
 """
 import sys
 

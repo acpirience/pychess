@@ -6,8 +6,6 @@ Object used to analyse a position during a game
 
 import copy
 
-from loguru import logger
-
 from move import Move
 from piece import Piece
 
@@ -59,7 +57,7 @@ class Position:
     def _get_valid_moves(self) -> list[Move]:
         possible_moves = self._get_possible_moves(self.board, str(self.flags["color"]))
         valid_moves = [x for x in possible_moves if not self.in_check_after_move(x)]
-        logger.info(f"Valid moves: {[x.chess_move for x in valid_moves]}")
+        # logger.info(f"Valid moves: {[x.chess_move for x in valid_moves]}")
         return valid_moves
 
     def _get_possible_moves(

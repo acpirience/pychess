@@ -17,13 +17,15 @@ from piece import Piece
 from position import Position
 
 FEN_INITIAL_BOARD = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
-
+COLOR_TO_TEXT = {"w": "White", "b": "Black"}
 
 BOARD_SIZE = (SQUARE_SIZE * 8) + (BORDER_SIZE * 2)
 
 
 class Game:
-    def __init__(self, game_type: str = "PVP", player_color: str = "wb") -> None:
+    def __init__(
+        self, game_type: str = "PVP", player_color: str = "wb", batched: bool = False
+    ) -> None:
         self.move_list: list[str]
         self.FEN_list: list[str]
 
@@ -36,6 +38,7 @@ class Game:
         self.promote_choice: str
         self.board: Board
         self.ai: Ai
+        self.batched = batched
 
         self.flags = {
             "color": "w",
@@ -47,7 +50,8 @@ class Game:
         }
 
         # assets
-        self._load_assets()
+        if not self.batched:
+            self._load_assets()
 
         # start
         self.init_game()
@@ -86,9 +90,10 @@ class Game:
             if self.game_status == "Started":
                 self.ai = Ai(self.position, str(self.flags["color"]))
 
-        logger.info(
-            f"{'White' if self.flags['color'] == 'w' else 'Black'} ({'Player' if self.board.player_plays else 'AI'}) plays"
-        )
+        if not self.batched:
+            logger.info(
+                f"Turn {self.turn} {COLOR_TO_TEXT[str(self.flags['color'])]} ({'Player' if self.board.player_plays else 'AI'}) plays"
+            )
 
     def detect_end_of_game(self) -> None:
         if self.is_checkmate_stalemate():
@@ -273,12 +278,15 @@ class Game:
 
         # check if opposite king is in check
         if self.position.king_is_in_check(self.board.board_content):
-            logger.info(f"{self.flags['color']} King is in check")
+            if not self.batched:
+                logger.info(f"{COLOR_TO_TEXT[str(self.flags['color'])]} King is in check")
             self.board.move_played.chess_move += "+"
             if self.flags["game type"] != "AIVAI":
                 pygame.mixer.Sound.play(self.snd_check)
 
         # register move
+        if not self.batched:
+            logger.info(f"- {self.board.move_played.chess_move}")
         self.flags["previous move"] = self.board.move_played.chess_move
         self.move_list.append(self.board.move_played.chess_move)
         if self.flags["game type"] != "AIVAI":
@@ -304,7 +312,7 @@ class Game:
         # render turn number and who's turn is it on screen
         render_str = f"TURN {self.turn}, "
         if self.game_status == "Started":
-            render_str += f"{'White' if self.flags['color'] == 'w' else 'Black'} plays"
+            render_str += f"{COLOR_TO_TEXT[str(self.flags['color'])]} plays"
         else:
             render_str += f"{self.game_status}"
 
