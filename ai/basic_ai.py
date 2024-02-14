@@ -27,6 +27,18 @@ class Basic_Ai(Ai):
         if not valid_move:
             return
 
+        self.move = self.get_get_best_move()
+
+        # promotion special case => always choose queen
+        if self.move.chess_move[0].islower():
+            if (self.color == "w" and self.move.square_to[0] == 0) or (
+                self.color == "b" and self.move.square_to[0] == 7
+            ):
+                self.move.chess_move += "Q"
+
+        self.get_next_move_finished = True
+
+    def get_get_best_move(self) -> Move:
         move_scores: list[tuple[Move, int]] = []
 
         max_score = -9999999999
@@ -39,15 +51,7 @@ class Basic_Ai(Ai):
 
         chosen_moves = [x[0] for x in move_scores if x[1] == max_score]
 
-        self.move = chosen_moves[randint(0, len(chosen_moves) - 1)]
-        # promotion special case => always choose queen
-        if self.move.chess_move[0].islower():
-            if (self.color == "w" and self.move.square_to[0] == 0) or (
-                self.color == "b" and self.move.square_to[0] == 7
-            ):
-                self.move.chess_move += "Q"
-
-        self.get_next_move_finished = True
+        return chosen_moves[randint(0, len(chosen_moves) - 1)]
 
     def evaluate_board(self, board: list[list[Piece]], color: str) -> int:
         score = 0
