@@ -7,6 +7,7 @@ Tests for position.py - fill_move_map
 import pytest
 
 from board import Board
+from common import FlagsT
 from position import Position
 
 
@@ -17,16 +18,18 @@ def test_board() -> Board:
 
 
 @pytest.fixture
-def test_flags() -> dict[str, str | bool]:
+def test_flags() -> FlagsT:
     return {
         "color": "w",
-        "wKing can castle": True,
-        "bKing can castle": True,
-        "previous move": "",
+        "wKing_can_castle": True,
+        "bKing_can_castle": True,
+        "previous_move": "",
+        "game_type": "PVP",
+        "player_color": "w",
     }
 
 
-def test_move_map_start(test_board: Board, test_flags: dict[str, str | bool]) -> None:
+def test_move_map_start(test_board: Board, test_flags: FlagsT) -> None:
     test_board.load_board_from_FEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR")
 
     test_position = Position(test_board.board_content, test_flags)
@@ -52,7 +55,7 @@ def test_move_map_start(test_board: Board, test_flags: dict[str, str | bool]) ->
     assert (7, 4) not in move_map
 
 
-def test_move_map_castle(test_board: Board, test_flags: dict[str, str | bool]) -> None:
+def test_move_map_castle(test_board: Board, test_flags: FlagsT) -> None:
     test_board.load_board_from_FEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQK2R")
 
     test_position = Position(test_board.board_content, test_flags)

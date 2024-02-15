@@ -7,6 +7,7 @@ Tests for position.py - get_moves_for_piece => for the BISHOP
 import pytest
 
 from board import Board
+from common import FlagsT
 from position import Position
 
 
@@ -17,16 +18,18 @@ def test_board() -> Board:
 
 
 @pytest.fixture
-def test_flags() -> dict[str, str | bool]:
+def test_flags() -> FlagsT:
     return {
         "color": "w",
-        "wKing can castle": True,
-        "bKing can castle": True,
-        "previous move": "",
+        "wKing_can_castle": True,
+        "bKing_can_castle": True,
+        "previous_move": "",
+        "game_type": "PVP",
+        "player_color": "w",
     }
 
 
-def test_bishop_move(test_board: Board, test_flags: dict[str, str | bool]) -> None:
+def test_bishop_move(test_board: Board, test_flags: FlagsT) -> None:
     test_board.load_board_from_FEN("8/8/8/8/3B4/8/8/8")
 
     test_position = Position(test_board.board_content, test_flags)
@@ -51,7 +54,7 @@ def test_bishop_move(test_board: Board, test_flags: dict[str, str | bool]) -> No
     ]
 
 
-def test_black_bishop_move(test_board: Board, test_flags: dict[str, str | bool]) -> None:
+def test_black_bishop_move(test_board: Board, test_flags: FlagsT) -> None:
     test_board.load_board_from_FEN("8/8/8/8/3b4/8/8/8")
     test_flags["color"] = "b"
 
@@ -77,7 +80,7 @@ def test_black_bishop_move(test_board: Board, test_flags: dict[str, str | bool])
     ]
 
 
-def test_bishop_capture(test_board: Board, test_flags: dict[str, str | bool]) -> None:
+def test_bishop_capture(test_board: Board, test_flags: FlagsT) -> None:
     test_board.load_board_from_FEN("8/8/8/8/8/2b6/8/B7")
 
     test_position = Position(test_board.board_content, test_flags)
@@ -88,7 +91,7 @@ def test_bishop_capture(test_board: Board, test_flags: dict[str, str | bool]) ->
     assert chess_moves == ["Ba1b2", "Ba1xc3"]
 
 
-def test_blocked_blocked(test_board: Board, test_flags: dict[str, str | bool]) -> None:
+def test_blocked_blocked(test_board: Board, test_flags: FlagsT) -> None:
     test_board.load_board_from_FEN("1p6/1P6/1P6/1P6/1P6/1P6/1P6/B7")
 
     test_position = Position(test_board.board_content, test_flags)

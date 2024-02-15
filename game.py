@@ -12,7 +12,7 @@ from loguru import logger
 
 from ai.ai import Ai
 from board import BORDER_SIZE, COLOR_SCHEME_LIST, SQUARE_SIZE, Board
-from common import center_text
+from common import FlagsT, center_text
 from config import FONT_DIR, SCREEN_HEIGHT, SCREEN_WIDTH, SOUND_DIR
 from piece import Piece
 from position import Position
@@ -36,7 +36,6 @@ class Game:
 
         # dict containing information on the game such as
         # who is to play / is a king in check / have king moved (for castle)
-        self.flags: dict[str, str | bool]
         self.game_status: str
         self.turn: int
         self.waiting_for_promotion: bool
@@ -46,13 +45,13 @@ class Game:
         self.batched = batched
         self.ai_type: dict[str, str] = {"w": ai_types[0], "b": ai_types[1]}
 
-        self.flags = {
+        self.flags: FlagsT = {
             "color": "w",
-            "wKing can castle": True,
-            "bKing can castle": True,
-            "previous move": "",
-            "game type": game_type,  # PVP / PVAI / AIVAI
-            "player color": player_color,  # w / b / wb
+            "wKing_can_castle": True,
+            "bKing_can_castle": True,
+            "previous_move": "",
+            "game_type": game_type,  # PVP / PVAI / AIVAI
+            "player_color": player_color,  # w / b / wb
         }
 
         # assets
@@ -73,7 +72,7 @@ class Game:
         self.turn = 1
         self.board = Board("WOOD")
         self.board.load_board_from_FEN(FEN_INITIAL_BOARD)
-        if self.flags["game type"] != "AIVAI":
+        if self.flags["game_type"] != "AIVAI":
             pygame.mixer.Sound.play(self.snd_game_start)
         self.next_move()
 
@@ -86,26 +85,25 @@ class Game:
         if self.board.board_is_active:
             self.detect_end_of_game()
             if not self.board.board_is_active:
-                if self.flags["game type"] != "AIVAI":
+                if self.flags["game_type"] != "AIVAI":
                     pygame.mixer.Sound.play(self.snd_game_end)
 
         # signal to the board if a human is player next move
-        if str(self.flags["color"]) in str(self.flags["player color"]):
+        if self.flags["color"] in self.flags["player_color"]:
             self.board.player_plays = True
         else:
             self.board.player_plays = False
             if self.game_status == "Started":
                 self.ai = self.get_ai()
-
-                Ai(self.position, str(self.flags["color"]))
+                Ai(self.position, self.flags["color"])
 
         if not self.batched:
             logger.info(
-                f"Turn {self.turn} {COLOR_TO_TEXT[str(self.flags['color'])]} ({'Player' if self.board.player_plays else 'AI'}) plays"
+                f"Turn {self.turn} {COLOR_TO_TEXT[self.flags['color']]} ({'Player' if self.board.player_plays else 'AI'}) plays"
             )
 
     def get_ai(self) -> Ai:
-        color = str(self.flags["color"])
+        color = self.flags["color"]
         match self.ai_type[color]:
             case "random":
                 from ai.random_ai import Random_Ai
@@ -115,6 +113,10 @@ class Game:
                 from ai.basic_ai import Basic_Ai
 
                 return Basic_Ai(self.position, color)
+            case "minmax":
+                from ai.minmax_ai import Minmax_Ai
+
+                return Minmax_Ai(self.position, color)
             case _:
                 logger.error(f"Unknwon AI type {self.ai_type[color]}")
                 sys.exit(1)
@@ -289,7 +291,10 @@ class Game:
 
         # Update flags
         if self.board.move_played.chess_move.startswith("K"):
-            self.flags[f"{self.flags['color']}King can castle"] = False
+            if self.flags["color"] == "w":
+                self.flags["wKing_can_castle"] = False
+            else:
+                self.flags["bKing_can_castle"] = False
 
         # Update Board
         self.board.do_move(self.board.move_played)
@@ -303,17 +308,17 @@ class Game:
         # check if opposite king is in check
         if self.position.king_is_in_check(self.board.board_content):
             if not self.batched:
-                logger.info(f"{COLOR_TO_TEXT[str(self.flags['color'])]} King is in check")
+                logger.info(f"{COLOR_TO_TEXT[self.flags['color']]} King is in check")
             self.board.move_played.chess_move += "+"
-            if self.flags["game type"] != "AIVAI":
+            if self.flags["game_type"] != "AIVAI":
                 pygame.mixer.Sound.play(self.snd_check)
 
         # register move
         if not self.batched:
             logger.info(f"- {self.board.move_played.chess_move}")
-        self.flags["previous move"] = self.board.move_played.chess_move
+        self.flags["previous_move"] = self.board.move_played.chess_move
         self.move_list.append(self.board.move_played.chess_move)
-        if self.flags["game type"] != "AIVAI":
+        if self.flags["game_type"] != "AIVAI":
             pygame.mixer.Sound.play(self.snd_move_piece)
 
         if self.flags["color"] == "w":
@@ -336,7 +341,7 @@ class Game:
         # render turn number and who's turn is it on screen
         render_str = f"TURN {self.turn}, "
         if self.game_status == "Started":
-            render_str += f"{COLOR_TO_TEXT[str(self.flags['color'])]} plays"
+            render_str += f"{COLOR_TO_TEXT[self.flags['color']]} plays"
         else:
             render_str += f"{self.game_status}"
 
@@ -360,7 +365,7 @@ class Game:
             if (cnt - offset) >= 0:
                 col = (cnt - offset) // 72
                 if cnt % 2 == 0:
-                    move = f"{(cnt+2)//2:0>2} {move} "
+                    move = f"{(cnt + 2) // 2:0>2} {move} "
                 else:
                     move = f"          - {move}"
                 game_canvas.blit(
@@ -398,8 +403,8 @@ class Game:
         game_canvas.blit(text, text_rect)
 
     def get_player_status(self) -> tuple[str, str]:
-        white_text = f"White: {'Human' if 'w' in str(self.flags['player color']) else 'AI (' + self.ai_type['w'] + ')'}"
-        black_text = f"Black: {'Human' if 'b' in str(self.flags['player color']) else 'AI (' + self.ai_type['b'] + ')'}"
+        white_text = f"White: {'Human' if 'w' in self.flags['player_color'] else 'AI (' + self.ai_type['w'] + ')'}"
+        black_text = f"Black: {'Human' if 'b' in self.flags['player_color'] else 'AI (' + self.ai_type['b'] + ')'}"
         return white_text, black_text
 
     def _render_restart(self, game_canvas: pygame.Surface) -> None:

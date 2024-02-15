@@ -7,6 +7,7 @@ Tests for position.py - get_moves_for_piece => for the QUEEN
 import pytest
 
 from board import Board
+from common import FlagsT
 from position import Position
 
 
@@ -17,16 +18,18 @@ def test_board() -> Board:
 
 
 @pytest.fixture
-def test_flags() -> dict[str, str | bool]:
+def test_flags() -> FlagsT:
     return {
         "color": "w",
-        "wKing can castle": True,
-        "bKing can castle": True,
-        "previous move": "",
+        "wKing_can_castle": True,
+        "bKing_can_castle": True,
+        "previous_move": "",
+        "game_type": "PVP",
+        "player_color": "w",
     }
 
 
-def test_queen_move(test_board: Board, test_flags: dict[str, str | bool]) -> None:
+def test_queen_move(test_board: Board, test_flags: FlagsT) -> None:
     test_board.load_board_from_FEN("8/8/8/8/4Q3/8/8/8")
 
     test_position = Position(test_board.board_content, test_flags)
@@ -65,7 +68,7 @@ def test_queen_move(test_board: Board, test_flags: dict[str, str | bool]) -> Non
     ]
 
 
-def test_black_queen_move(test_board: Board, test_flags: dict[str, str | bool]) -> None:
+def test_black_queen_move(test_board: Board, test_flags: FlagsT) -> None:
     test_board.load_board_from_FEN("8/8/8/8/4q3/8/8/8")
     test_flags["color"] = "b"
 
@@ -105,7 +108,7 @@ def test_black_queen_move(test_board: Board, test_flags: dict[str, str | bool]) 
     ]
 
 
-def test_queen_capture(test_board: Board, test_flags: dict[str, str | bool]) -> None:
+def test_queen_capture(test_board: Board, test_flags: FlagsT) -> None:
     test_board.load_board_from_FEN("r7/4p2p/8/8/r3Q2p/8/8/1b2n2b")
 
     test_position = Position(test_board.board_content, test_flags)

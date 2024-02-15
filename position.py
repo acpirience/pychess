@@ -6,6 +6,7 @@ Object used to analyse a position during a game
 
 import copy
 
+from common import FlagsT
 from move import Move
 from piece import Piece
 
@@ -22,7 +23,7 @@ CASTLE_MOVES = {
 
 
 class Position:
-    def __init__(self, board: list[list[Piece]], flags: dict[str, str | bool]) -> None:
+    def __init__(self, board: list[list[Piece]], flags: FlagsT) -> None:
         self.board = board
         self.flags = flags
         self.valid_moves = self.get_valid_moves()
@@ -41,10 +42,10 @@ class Position:
         return self._get_valid_moves()
 
     def king_is_in_check(self, board: list[list[Piece]]) -> bool:
-        coords = Position._get_king_coords(board, str(self.flags["color"]))
+        coords = Position._get_king_coords(board, self.flags["color"])
         if coords == "ERROR":
             return False
-        return self.square_is_attacked(board, coords, str(self.flags["color"]))
+        return self.square_is_attacked(board, coords, self.flags["color"])
 
     def square_is_attacked(self, board: list[list[Piece]], coords: str, color: str) -> bool:
         # square can be target of attack of color opposite of "color"
@@ -55,7 +56,7 @@ class Position:
         return coords in possible_targets
 
     def _get_valid_moves(self) -> list[Move]:
-        possible_moves = self._get_possible_moves(self.board, str(self.flags["color"]))
+        possible_moves = self._get_possible_moves(self.board, self.flags["color"])
         valid_moves = [x for x in possible_moves if not self.in_check_after_move(x)]
         # logger.info(f"Valid moves: {[x.chess_move for x in valid_moves]}")
         return valid_moves
@@ -79,7 +80,7 @@ class Position:
         return moves
 
     def in_check_after_move(self, move: Move) -> bool:
-        board_after_move = self.get_board_after_move(move, self.board, str(self.flags["color"]))
+        board_after_move = self.get_board_after_move(move, self.board, self.flags["color"])
         return self.king_is_in_check(board_after_move)
 
     def _get_possible_captures(self, board: list[list[Piece]], color: str) -> list[Move]:
@@ -165,13 +166,12 @@ class Position:
                 if 0 <= col + i <= 7:
                     # previous move was a pawn moving 2 squares on left or right of pawn
                     if (
-                        str(self.flags["previous move"])[-2:]
+                        self.flags["previous_move"][-2:]
                         == f"{Position._xy_to_chess_coords(line, col + i)}"  # end square is beside pawn
-                        and len(str(self.flags["previous move"]))
-                        == 4  # pawn move is 4 length string
+                        and len(self.flags["previous_move"]) == 4  # pawn move is 4 length string
                         and abs(
-                            int(str(self.flags["previous move"])[-1])
-                            - int(str(self.flags["previous move"])[-3])
+                            int(self.flags["previous_move"][-1])
+                            - int(self.flags["previous_move"][-3])
                         )
                         == 2  # 2 square move
                     ):
@@ -352,7 +352,10 @@ class Position:
                         )
                     )
         # castle
-        if capture_only or not self.flags[f"{self.flags['color']}King can castle"]:
+        if capture_only or not (
+            (self.flags["color"] == "w" and self.flags["wKing_can_castle"])
+            or (self.flags["color"] == "b" and self.flags["bKing_can_castle"])
+        ):
             return moves
 
         if (line == 7 and col == 4 and color == "w") or (line == 0 and col == 4 and color == "b"):

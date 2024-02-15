@@ -12,7 +12,7 @@ from loguru import logger
 from common import center_text
 from config import FONT_DIR, SCREEN_WIDTH
 
-AI_TYPES = ["basic", "random"]
+AI_TYPES = ["basic", "random", "minmax"]
 
 
 class StartMenu:
@@ -21,7 +21,7 @@ class StartMenu:
         self.mouse_clicked: dict[str, bool]
         self.menu_done = False
         self.game_type: str
-        self.ai_type = {"w": "basic", "b": "basic"}
+        self.ai_type = {"w": "basic", "b": "minmax"}
         self._load_assets()
         logger.info("Choosing game type")
 

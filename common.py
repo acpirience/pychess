@@ -4,7 +4,18 @@ Helper functions
 
 """
 
+from typing import TypedDict
+
 import pygame
+
+
+class FlagsT(TypedDict):
+    color: str
+    wKing_can_castle: bool
+    bKing_can_castle: bool
+    previous_move: str
+    game_type: str
+    player_color: str
 
 
 def center_text(
