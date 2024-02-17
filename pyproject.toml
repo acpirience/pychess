@@ -7,6 +7,7 @@ readme = "README.md"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.4"
+pytest-cov = "^4.1.0"
 
 [tool.ruff]
 # Exclude a variety of commonly ignored directories.
@@ -43,7 +44,7 @@ exclude = [
 line-length = 100
 indent-width = 4
 
-# Assume Python 3.8
+# Assume Python 3.11
 target-version = "py311"
 
 [tool.ruff.lint]
@@ -91,7 +92,6 @@ docstring-code-line-length = "dynamic"
 python = "^3.11"
 pygame = "^2.5.2"
 loguru = "^0.7.2"
-pytest-cov = "^4.1.0"
 
 [build-system]
 requires = ["poetry-core"]
