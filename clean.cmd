@@ -4,7 +4,7 @@ echo off
 ruff format .
 @echo.
 @echo === Ruff Lint  ===
-ruff --fix check .
+ruff check --fix .
 @echo.
 @echo === MYPY  ===
 mypy .
